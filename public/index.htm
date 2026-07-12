@@ -4,13 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login & Registration</title>
+    <title>KRHDev Tech Blog</title>
     <link rel="stylesheet" href="./assets/style.css">
 </head>
 
 <body>
+    <header class="site-header">
     <brand><img src="./assets/krhdev.png" alt="Tech Blog Logo"></brand>
     <h1>Tech Blog</h1>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+</header>
+
+
     <div class="container" id="auth-card">
         <h2>Register</h2>
         <input type="text" id="username" placeholder="Username">
@@ -25,7 +30,7 @@
     </div>
 
     <div class="container hidden" id="app-container">
-        <h2>Welcome</h2>
+        <h2 id="welcome-msg">Welcome</h2>
         <button onclick="logout()">Logout</button>
         <hr>
         <h2>Create a Post</h2>

@@ -5,7 +5,7 @@
 :root {
     --brand:        #510061;
     --brand-dark:   #3a0045;
-    --bg:           #f4f6f9;
+    --bg:           #fdf2e6;
     --surface:      #ffffff;
     --border:       #e0e0e0;
     --text:         #2c2c2c;
@@ -41,97 +41,168 @@ body, html {
     display: flex;
     flex-direction: column;
     align-items: center;
+    line-height: 1.5;
+    padding: 0 clamp(16px, 6vw, 96px);
     transition: background-color 0.2s, color 0.2s;
 }
 
-h1 {
-    font-size: 1.6rem;
-    color: var(--brand);
-    text-align: center;
-    margin: 28px 0 20px;
+.site-header {
+    display: flex;
+    align-items: center;
+    gap: clamp(12px, 2vw, 22px);
+    margin: clamp(20px, 4vw, 40px) 0 clamp(16px, 3vw, 28px);
+    width: 100%;
 }
 
-brand img {
+.theme-toggle {
+    margin-left: auto;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px var(--shadow);
+    transition: background 0.2s, transform 0.15s;
+}
+
+.theme-toggle:hover { transform: scale(1.06); }
+
+.site-header img {
     display: block;
-    width: 64px;
-    height: 64px;
-    border-radius: 14px;
-    margin: 20px auto 0;
+    width: clamp(56px, 8vw, 104px);
+    height: clamp(56px, 8vw, 104px);
+    border-radius: 18px;
+    box-shadow: 0 4px 14px var(--shadow);
+}
+
+h1 {
+    font-size: clamp(1.4rem, 3vw, 2.3rem);
+    font-weight: 600;
+    color: var(--brand);
+    letter-spacing: -0.01em;
+    margin: 0;
 }
 
 /* ── Card (auth card / app container) ── */
 .container {
     background: var(--surface);
-    border-radius: 12px;
-    padding: 32px;
+    border-radius: 14px;
+    padding: clamp(24px, 4vw, 48px);
     width: 100%;
-    max-width: 420px;
-    margin: 20px auto;
-    box-shadow: 0 8px 32px var(--shadow);
+    margin: clamp(12px, 2vw, 24px) 0 clamp(24px, 4vw, 48px);
+    box-shadow: 0 10px 34px var(--shadow);
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: clamp(12px, 1.5vw, 18px);
 }
 
 .hidden { display: none; }
 
 .container h2 {
-    font-size: 1.1rem;
-    font-weight: 500;
+    font-size: clamp(1.05rem, 1.4vw, 1.35rem);
+    font-weight: 600;
     color: var(--brand);
-    margin-bottom: 4px;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
 }
 
 .container input,
 .container textarea {
     width: 100%;
-    padding: 9px 12px;
+    padding: clamp(10px, 1vw, 14px) clamp(12px, 1.2vw, 18px);
     border: 1px solid var(--input-border);
-    border-radius: 6px;
-    font-size: 0.95rem;
+    border-radius: 8px;
+    font-size: clamp(0.95rem, 1vw, 1.05rem);
     font-family: inherit;
     background: var(--surface);
     color: var(--text);
-    transition: border-color 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .container textarea {
-    min-height: 100px;
+    min-height: 120px;
     resize: vertical;
+}
+
+.container input::placeholder,
+.container textarea::placeholder {
+    color: var(--text-muted);
 }
 
 .container input:focus,
 .container textarea:focus {
     outline: none;
     border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(81, 0, 97, 0.12);
 }
 
 .container button {
-    padding: 10px 18px;
+    align-self: flex-start;
+    padding: clamp(11px, 1.1vw, 15px) clamp(22px, 2.5vw, 34px);
     background: var(--brand);
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 0.95rem;
+    font-size: clamp(0.95rem, 1vw, 1.05rem);
     font-family: inherit;
-    font-weight: 500;
-    transition: background 0.15s;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: background 0.15s, transform 0.1s;
 }
 
 .container button:hover { background: var(--brand-dark); }
+.container button:active { transform: scale(0.98); }
 
 .container hr {
     width: 100%;
     border: none;
     border-top: 1px solid var(--border);
-    margin: 4px 0;
+    margin: 6px 0;
 }
 
 /* ── Posts feed ── */
 #posts {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-top: 8px;
+    gap: clamp(12px, 1.5vw, 20px);
+    margin-top: clamp(8px, 1vw, 16px);
+    width: 100%;
+}
+
+#posts h3 {
+    font-size: clamp(1.05rem, 1.6vw, 1.4rem);
+    font-weight: 600;
+    color: var(--brand);
+    margin-bottom: clamp(6px, 0.8vw, 12px);
+}
+
+#posts > div {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: clamp(18px, 2.2vw, 32px);
+    box-shadow: 0 3px 12px var(--shadow);
+}
+
+#posts p {
+    font-size: clamp(0.92rem, 1.1vw, 1.1rem);
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: clamp(8px, 1vw, 14px);
+}
+
+#posts small {
+    display: block;
+    font-size: clamp(0.78rem, 0.85vw, 0.9rem);
+    color: var(--text-muted);
+}
+
+/* ── Responsive tweaks  */
+@media (max-width: 400px) {
+    #posts > div { padding: 14px; }
 }

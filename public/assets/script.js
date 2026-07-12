@@ -39,6 +39,10 @@ function login() {
 
         alert("User Logged In successfully");
 
+        // Personalise the welcome message
+        const username = data.userData?.username || "there";
+        document.getElementById("welcome-msg").textContent = `Welcome, ${username}!`;
+
         // Fetch the posts list
         fetchPosts();
 
@@ -105,3 +109,43 @@ function createPost() {
       fetchPosts();
     });
 }
+
+// ── Dark / Light mode toggle ──
+const themeToggle = document.getElementById("theme-toggle");
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  if (themeToggle) {
+    themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
+  }
+}
+
+const savedTheme = localStorage.getItem("theme") || "light";
+applyTheme(savedTheme);
+
+if (themeToggle) {
+  themeToggle.addEventListener("click", () => {
+    const current = document.documentElement.getAttribute("data-theme");
+    const next = current === "dark" ? "light" : "dark";
+    localStorage.setItem("theme", next);
+    applyTheme(next);
+  });
+}
+
+// ── Enter key submits login/register forms ──
+function handleEnterKey(e, callback) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    callback();
+  }
+}
+
+["username", "email", "password"].forEach((id) => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener("keydown", (e) => handleEnterKey(e, register));
+});
+
+["login-email", "login-password"].forEach((id) => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener("keydown", (e) => handleEnterKey(e, login));
+});
