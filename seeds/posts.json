@@ -1,0 +1,122 @@
+[
+  {
+    "title": "The Rise of AI in Web Development",
+    "content": "AI is transforming how we build websites, making development faster and smarter.",
+    "postedBy": "John Doe",
+    "createdOn": "2024-02-04T12:00:00Z"
+  },
+  {
+    "title": "Understanding JavaScript Closures",
+    "content": "Closures allow functions to retain access to variables even after execution.",
+    "postedBy": "Jane Smith",
+    "createdOn": "2024-02-03T10:15:00Z"
+  },
+  {
+    "title": "Node.js Performance Optimization Tips",
+    "content": "Learn how to speed up your Node.js applications with caching and clustering.",
+    "postedBy": "Alice Brown",
+    "createdOn": "2024-02-02T08:45:00Z"
+  },
+  {
+    "title": "Mastering Sequelize for Database Management",
+    "content": "Sequelize simplifies working with databases in Node.js.",
+    "postedBy": "Bob White",
+    "createdOn": "2024-02-01T14:30:00Z"
+  },
+  {
+    "title": "Async/Await in JavaScript Explained",
+    "content": "Understanding asynchronous JavaScript using async/await.",
+    "postedBy": "Charlie Green",
+    "createdOn": "2024-01-30T09:00:00Z"
+  },
+  {
+    "title": "Introduction to GraphQL",
+    "content": "GraphQL provides a flexible alternative to REST APIs.",
+    "postedBy": "Dana Black",
+    "createdOn": "2024-01-29T17:00:00Z"
+  },
+  {
+    "title": "Why TypeScript is Gaining Popularity",
+    "content": "TypeScript enhances JavaScript by adding static typing.",
+    "postedBy": "Ethan Ford",
+    "createdOn": "2024-01-28T11:30:00Z"
+  },
+  {
+    "title": "Building RESTful APIs with Express",
+    "content": "A guide to creating scalable RESTful APIs using Express.js.",
+    "postedBy": "Fiona Blue",
+    "createdOn": "2024-01-27T15:45:00Z"
+  },
+  {
+    "title": "Dockerizing Your Node.js Application",
+    "content": "Learn how to containerize your Node.js app with Docker.",
+    "postedBy": "George Red",
+    "createdOn": "2024-01-26T08:20:00Z"
+  },
+  {
+    "title": "How to Secure a Node.js Application",
+    "content": "Implement security best practices for your Node.js apps.",
+    "postedBy": "Hannah Yellow",
+    "createdOn": "2024-01-25T13:10:00Z"
+  },
+  {
+    "title": "React Hooks: The Ultimate Guide",
+    "content": "Understand and implement React Hooks for state and effects.",
+    "postedBy": "Ian Silver",
+    "createdOn": "2024-01-24T10:55:00Z"
+  },
+  {
+    "title": "The Benefits of Serverless Architecture",
+    "content": "Exploring serverless computing and how it reduces costs.",
+    "postedBy": "Julia Gold",
+    "createdOn": "2024-01-23T18:25:00Z"
+  },
+  {
+    "title": "WebSockets vs HTTP: What's the Difference?",
+    "content": "Understanding real-time communication with WebSockets.",
+    "postedBy": "Kevin Brown",
+    "createdOn": "2024-01-22T07:40:00Z"
+  },
+  {
+    "title": "Automating Tasks with Node.js",
+    "content": "Use Node.js for task automation with scripts and schedulers.",
+    "postedBy": "Lara White",
+    "createdOn": "2024-01-21T16:50:00Z"
+  },
+  {
+    "title": "A Guide to MongoDB Aggregation Pipeline",
+    "content": "Learn how to perform advanced queries with MongoDB.",
+    "postedBy": "Mike Gray",
+    "createdOn": "2024-01-20T12:35:00Z"
+  },
+  {
+    "title": "Why You Should Use Next.js for React Apps",
+    "content": "Next.js enhances React with server-side rendering and SEO.",
+    "postedBy": "Nina Purple",
+    "createdOn": "2024-01-19T14:20:00Z"
+  },
+  {
+    "title": "Understanding OAuth 2.0 Authentication",
+    "content": "OAuth 2.0 is a secure authorization framework for web apps.",
+    "postedBy": "Oscar Blue",
+    "createdOn": "2024-01-18T09:45:00Z"
+  },
+  {
+    "title": "Testing Your Node.js Application",
+    "content": "Learn about Jest, Mocha, and other testing frameworks.",
+    "postedBy": "Paula Pink",
+    "createdOn": "2024-01-17T11:15:00Z"
+  },
+  {
+    "title": "Scaling Node.js Applications",
+    "content": "Techniques to handle high traffic with Node.js efficiently.",
+    "postedBy": "Quinn Orange",
+    "createdOn": "2024-01-16T15:05:00Z"
+  },
+  {
+    "title": "Deploying Your App on AWS with CI/CD",
+    "content": "Learn how to automate deployments using AWS and CI/CD pipelines.",
+    "postedBy": "Ryan Green",
+    "createdOn": "2024-01-15T08:50:00Z"
+  }
+]

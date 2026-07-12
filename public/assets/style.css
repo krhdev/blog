@@ -1,0 +1,137 @@
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── CSS Variables — Light (default) ── */
+:root {
+    --brand:        #510061;
+    --brand-dark:   #3a0045;
+    --bg:           #f4f6f9;
+    --surface:      #ffffff;
+    --border:       #e0e0e0;
+    --text:         #2c2c2c;
+    --text-muted:   #888;
+    --shadow:       rgba(0,0,0,0.07);
+    --input-border: #ddd;
+}
+
+/* ── Dark mode overrides ──
+   Toggle by setting data-theme="dark" on <html> or <body> */
+[data-theme="dark"] {
+    --bg:             #1a1a2e;
+    --surface:        #16213e;
+    --border:         #2a2a4a;
+    --text:           #e0e0e0;
+    --text-muted:     #9090a0;
+    --shadow:         rgba(0,0,0,0.3);
+    --input-border:   #2a2a4a;
+    --brand-readable: #c97fdc;
+}
+
+[data-theme="dark"] .container h2,
+[data-theme="dark"] #auth-title {
+    color: var(--brand-readable);
+}
+
+/* ── Base ── */
+body, html {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+h1 {
+    font-size: 1.6rem;
+    color: var(--brand);
+    text-align: center;
+    margin: 28px 0 20px;
+}
+
+brand img {
+    display: block;
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    margin: 20px auto 0;
+}
+
+/* ── Card (auth card / app container) ── */
+.container {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 32px;
+    width: 100%;
+    max-width: 420px;
+    margin: 20px auto;
+    box-shadow: 0 8px 32px var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.hidden { display: none; }
+
+.container h2 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--brand);
+    margin-bottom: 4px;
+}
+
+.container input,
+.container textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: var(--surface);
+    color: var(--text);
+    transition: border-color 0.15s;
+}
+
+.container textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.container input:focus,
+.container textarea:focus {
+    outline: none;
+    border-color: var(--brand);
+}
+
+.container button {
+    padding: 10px 18px;
+    background: var(--brand);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+    font-weight: 500;
+    transition: background 0.15s;
+}
+
+.container button:hover { background: var(--brand-dark); }
+
+.container hr {
+    width: 100%;
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 4px 0;
+}
+
+/* ── Posts feed ── */
+#posts {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+}

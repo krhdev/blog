@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Registration</title>
+    <link rel="stylesheet" href="./assets/style.css">
+</head>
+
+<body>
+    <brand><img src="./assets/krhdev.png" alt="Tech Blog Logo"></brand>
+    <h1>Tech Blog</h1>
+    <div class="container" id="auth-card">
+        <h2>Register</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="register()">Register</button>
+        <hr>
+        <h2>Login</h2>
+        <input type="email" id="login-email" placeholder="Email">
+        <input type="password" id="login-password" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
+
+    <div class="container hidden" id="app-container">
+        <h2>Welcome</h2>
+        <button onclick="logout()">Logout</button>
+        <hr>
+        <h2>Create a Post</h2>
+        <input type="text" id="post-title" placeholder="Title">
+        <textarea id="post-content" placeholder="Content"></textarea>
+        <button onclick="createPost()">Submit Post</button>
+        <hr>
+        <h2>Posts</h2>
+        <button onclick="fetchPosts()">Load Posts</button>
+        <div id="posts"></div>
+    </div>
+
+    <script src="./assets/script.js"></script>
+</body>
+
+</html>
