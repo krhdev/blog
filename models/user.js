@@ -5,6 +5,8 @@ const sequelize = require("../config/connection");
 
 class User extends Model {
   checkPassword(loginPw) {
+    console.log("Login attempt:", JSON.stringify(loginPw));
+    console.log("Stored hash:", this.password);
     return bcrypt.compareSync(loginPw, this.password);
   }
 }
@@ -49,10 +51,9 @@ User.init(
         return newUserData;
       },
       beforeUpdate: async (updatedUserData) => {
-        updatedUserData.password = await bcrypt.hash(
-          updatedUserData.password,
-          10
-        );
+        if (updatedUserData.changed("password")) {
+          updatedUserData.password = await bcrypt.hash(updatedUserData.password, 10);
+        }
         return updatedUserData;
       },
     },

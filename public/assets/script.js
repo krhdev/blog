@@ -42,8 +42,8 @@ function login() {
         // Fetch the posts list
         fetchPosts();
 
-        // Hide the auth container and show the app container as we're now logged in
-        document.getElementById("auth-container").classList.add("hidden");
+        // Hide the auth card and show the app container as we're now logged in
+        document.getElementById("auth-card").classList.add("hidden");
         document.getElementById("app-container").classList.remove("hidden");
       } else {
         alert(data.message);
@@ -62,7 +62,7 @@ function logout() {
     // Clear the token from the local storage as we're now logged out
     localStorage.removeItem("authToken");
     token = null;
-    document.getElementById("auth-container").classList.remove("hidden");
+    document.getElementById("auth-card").classList.remove("hidden");
     document.getElementById("app-container").classList.add("hidden");
   });
 }
