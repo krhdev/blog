@@ -2,13 +2,22 @@
 const app = require("express").Router();
 
 // import the models
-const { Post } = require("../models/index");
+const { Post, Category } = require("../models/index");
+
+// import the auth middleware
+const { authMiddleware } = require("../utils/auth");
 
 // Route to add a new post
-app.post("/", async (req, res) => {
+app.post("/", authMiddleware, async (req, res) => {
   try {
-    const { title, content, postedBy } = req.body;
-    const post = await Post.create({ title, content, postedBy });
+    const { title, content, postedBy, categoryId } = req.body;
+    const post = await Post.create({
+      title,
+      content,
+      postedBy,
+      categoryId,
+      userId: req.user.id,
+    });
 
     res.status(201).json(post);
   } catch (error) {
@@ -16,45 +25,67 @@ app.post("/", async (req, res) => {
   }
 });
 
-// Route to get all posts
-app.get("/", async (req, res) => {
+// Route to get all posts — optionally filtered by category via ?categoryId=X
+app.get("/", authMiddleware, async (req, res) => {
   try {
-    const posts = await Post.findAll();
+    const { categoryId } = req.query;
+    const whereClause = categoryId ? { categoryId } : {};
 
-    res.json(posts);
+    const posts = await Post.findAll({
+      where: whereClause,
+      include: { model: Category, as: "category" },
+      order: [["createdOn", "DESC"]],
+    });
+
+    res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ error: "Error retrieving posts", error });
   }
 });
 
-app.get("/:id", async (req, res) => {
+app.get("/:id", authMiddleware, async (req, res) => {
   try {
-    const post = await Post.findByPk(req.params.id);
-    res.json(post);
+    const post = await Post.findByPk(req.params.id, {
+      include: { model: Category, as: "category" },
+    });
+    res.status(200).json(post);
   } catch (error) {
     res.status(500).json({ error: "Error retrieving post" });
   }
 });
 
 // Route to update a post
-app.put("/:id", async (req, res) => {
+app.put("/:id", authMiddleware, async (req, res) => {
   try {
-    const { title, content, postedBy } = req.body;
-    const post = await Post.update(
-      { title, content, postedBy },
-      { where: { id: req.params.id } }
+    const { title, content, postedBy, categoryId } = req.body;
+    const [affectedRows] = await Post.update(
+      { title, content, postedBy, categoryId },
+      { where: { id: req.params.id, userId: req.user.id } }
     );
-    res.json(post);
+
+    if (affectedRows === 0) {
+      return res.status(404).json({ error: "Post not found or you don't have permission to edit it" });
+    }
+
+    const updatedPost = await Post.findByPk(req.params.id);
+    res.status(200).json(updatedPost);
   } catch (error) {
     res.status(500).json({ error: "Error updating post" });
   }
 });
 
 // Route to delete a post
-app.delete("/:id", async (req, res) => {
+app.delete("/:id", authMiddleware, async (req, res) => {
   try {
-    const post = await Post.destroy({ where: { id: req.params.id } });
-    res.json(post);
+    const affectedRows = await Post.destroy({
+      where: { id: req.params.id, userId: req.user.id },
+    });
+
+    if (affectedRows === 0) {
+      return res.status(404).json({ error: "Post not found or you don't have permission to delete it" });
+    }
+
+    res.status(200).json({ message: "Post deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: "Error deleting post" });
   }

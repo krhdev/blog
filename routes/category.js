@@ -4,8 +4,11 @@ const app = require("express").Router();
 // import the models
 const { Category } = require("../models/index");
 
-// Route to add a new post
-app.post("/", async (req, res) => {
+// import the auth middleware
+const { authMiddleware } = require("../utils/auth");
+
+// Route to add a new category
+app.post("/", authMiddleware, async (req, res) => {
   try {
     const { category_name } = req.body;
     const category = await Category.create({ category_name });
@@ -16,21 +19,23 @@ app.post("/", async (req, res) => {
   }
 });
 
-// Route to get all posts
-app.get("/", async (req, res) => {
+// Route to get all categories
+app.get("/", authMiddleware, async (req, res) => {
   try {
-    console.log("Getting all categories");
     const categories = await Category.findAll();
-    console.log(categories);
     res.json(categories);
   } catch (error) {
-    res.status(500).json({ message: "Error adding categories", error: error });
+    res.status(500).json({ message: "Error retrieving categories", error: error });
   }
 });
 
-app.get("/:id", async (req, res) => {
+// Route to get a single category
+app.get("/:id", authMiddleware, async (req, res) => {
   try {
-    const category = await Post.findByPk(req.params.id);
+    const category = await Category.findByPk(req.params.id);
+    if (!category) {
+      return res.status(404).json({ error: "Category not found" });
+    }
     res.json(category);
   } catch (error) {
     res.status(500).json({ error: "Error retrieving category" });
@@ -38,24 +43,35 @@ app.get("/:id", async (req, res) => {
 });
 
 // Route to update a category
-app.put("/:id", async (req, res) => {
+app.put("/:id", authMiddleware, async (req, res) => {
   try {
-    const { name } = req.body;
-    const post = await Category.update(
-      { name },
+    const { category_name } = req.body;
+    const [affectedRows] = await Category.update(
+      { category_name },
       { where: { id: req.params.id } }
     );
-    res.json(post);
+
+    if (affectedRows === 0) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+
+    const updatedCategory = await Category.findByPk(req.params.id);
+    res.json(updatedCategory);
   } catch (error) {
     res.status(500).json({ error: "Error updating category" });
   }
 });
 
 // Route to delete a category
-app.delete("//:id", async (req, res) => {
+app.delete("/:id", authMiddleware, async (req, res) => {
   try {
-    const category = await Category.destroy({ where: { id: req.params.id } });
-    res.json(category);
+    const affectedRows = await Category.destroy({ where: { id: req.params.id } });
+
+    if (affectedRows === 0) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+
+    res.json({ message: "Category deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: "Error deleting category" });
   }
