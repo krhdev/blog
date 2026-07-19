@@ -43,9 +43,23 @@
         <h2>Create a Post</h2>
         <input type="text" id="post-title" placeholder="Title">
         <textarea id="post-content" placeholder="Content"></textarea>
+        <input type="file" id="post-image" accept="image/*">
+        <div class="category-row">
+          <select id="post-category">
+            <option value="">No category</option>
+          </select>
+          <input type="text" id="new-category-input" placeholder="New category">
+          <button class="btn-add-category" onclick="addCategory()">Add Category</button>
+        </div>
         <button onclick="createPost()">Submit Post</button>
         <hr>
         <h2>Posts</h2>
+        <div class="filter-row">
+          <label for="category-filter">Filter:</label>
+          <select id="category-filter" onchange="fetchPosts()">
+            <option value="">All categories</option>
+          </select>
+        </div>
         <button onclick="fetchPosts()">Load Posts</button>
         <div id="posts"></div>
     </div>

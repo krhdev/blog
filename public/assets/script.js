@@ -48,7 +48,8 @@ function login() {
         currentUserId = data.userData?.id || null;
         if (currentUserId) localStorage.setItem("userId", currentUserId);
 
-        // Fetch the posts list
+        // Load categories, then the posts list
+        loadCategories();
         fetchPosts();
 
         // Hide the auth card and show the app container as we're now logged in
@@ -78,6 +79,54 @@ function logout() {
   });
 }
 
+function loadCategories() {
+  fetch("http://localhost:3001/api/categories", {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then((res) => res.json())
+    .then((categories) => {
+      const postSelect = document.getElementById("post-category");
+      const filterSelect = document.getElementById("category-filter");
+
+      postSelect.innerHTML = '<option value="">No category</option>';
+      filterSelect.innerHTML = '<option value="">All categories</option>';
+
+      categories.forEach((cat) => {
+        const postOption = document.createElement("option");
+        postOption.value = cat.id;
+        postOption.textContent = cat.category_name;
+        postSelect.appendChild(postOption);
+
+        const filterOption = document.createElement("option");
+        filterOption.value = cat.id;
+        filterOption.textContent = cat.category_name;
+        filterSelect.appendChild(filterOption);
+      });
+    })
+    .catch((error) => console.log(error));
+}
+
+function addCategory() {
+  const input = document.getElementById("new-category-input");
+  const category_name = input.value.trim();
+  if (!category_name) return;
+
+  fetch("http://localhost:3001/api/categories", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ category_name }),
+  })
+    .then((res) => res.json())
+    .then(() => {
+      input.value = "";
+      loadCategories();
+    })
+    .catch((error) => console.log(error));
+}
+
 function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str;
@@ -85,7 +134,10 @@ function escapeHtml(str) {
 }
 
 function fetchPosts() {
-  fetch("http://localhost:3001/api/posts", {
+  const categoryId = document.getElementById("category-filter")?.value;
+  const query = categoryId ? `?categoryId=${categoryId}` : "";
+
+  fetch(`http://localhost:3001/api/posts${query}`, {
     method: "GET",
     headers: { Authorization: `Bearer ${token}` },
   })
@@ -100,9 +152,16 @@ function fetchPosts() {
         div.dataset.postedBy = post.postedBy;
 
         const isOwner = currentUserId && post.userId === currentUserId;
+        const categoryBadge = post.category
+          ? `<span class="post-category-badge">${escapeHtml(post.category.category_name)}</span>`
+          : "";
+        const imageHtml = post.featuredImage
+          ? `<img class="post-featured-image" src="${post.featuredImage}" alt="${escapeHtml(post.title)}">`
+          : "";
 
         div.innerHTML = `
-          <h3 class="post-title">${escapeHtml(post.title)}</h3>
+          ${imageHtml}
+          <h3 class="post-title">${escapeHtml(post.title)}${categoryBadge}</h3>
           <p class="post-content">${escapeHtml(post.content)}</p>
           <small>By: ${escapeHtml(post.postedBy)} on ${new Date(
           post.createdOn
@@ -110,8 +169,8 @@ function fetchPosts() {
           ${
             isOwner
               ? `<div class="post-actions">
-                  <button class="btn-edit-post" onclick="startEditPost(${post.id})">Edit Post</button>
-                  <button class="btn-delete-post" onclick="deletePost(${post.id})">Delete Post</button>
+                  <button class="btn-edit-post" onclick="startEditPost(${post.id})">Edit</button>
+                  <button class="btn-delete-post" onclick="deletePost(${post.id})">Delete</button>
                 </div>`
               : ""
           }
@@ -130,7 +189,7 @@ function startEditPost(postId) {
     <input type="text" class="edit-title-input" value="${escapeHtml(currentTitle)}">
     <textarea class="edit-content-input">${escapeHtml(currentContent)}</textarea>
     <div class="post-actions">
-      <button class="btn-save-post" onclick="saveEditPost(${postId})">Save Changes</button>
+      <button class="btn-save-post" onclick="saveEditPost(${postId})">Save</button>
       <button class="btn-cancel-post" onclick="fetchPosts()">Cancel</button>
     </div>
   `;
@@ -182,18 +241,38 @@ function deletePost(postId) {
 function createPost() {
   const title = document.getElementById("post-title").value;
   const content = document.getElementById("post-content").value;
+  const categoryId = document.getElementById("post-category").value || "";
+  const imageInput = document.getElementById("post-image");
+
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("content", content);
+  formData.append("postedBy", "User");
+  formData.append("categoryId", categoryId);
+  if (imageInput.files[0]) {
+    formData.append("featuredImage", imageInput.files[0]);
+  }
+
   fetch("http://localhost:3001/api/posts", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+      // No Content-Type header here — the browser sets the correct
+      // multipart/form-data boundary automatically for FormData
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ title, content, postedBy: "User" }),
+    body: formData,
   })
     .then((res) => res.json())
     .then(() => {
       alert("Post created successfully");
+      document.getElementById("post-title").value = "";
+      document.getElementById("post-content").value = "";
+      imageInput.value = "";
       fetchPosts();
+    })
+    .catch((error) => {
+      alert("Error creating post");
+      console.log(error);
     });
 }
 

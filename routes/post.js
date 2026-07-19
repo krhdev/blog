@@ -7,20 +7,27 @@ const { Post, Category } = require("../models/index");
 // import the auth middleware
 const { authMiddleware } = require("../utils/auth");
 
+// import the image upload middleware
+const upload = require("../utils/upload");
+
 // Route to add a new post
-app.post("/", authMiddleware, async (req, res) => {
+app.post("/", authMiddleware, upload.single("featuredImage"), async (req, res) => {
   try {
     const { title, content, postedBy, categoryId } = req.body;
+    const featuredImage = req.file ? req.file.path : null;
+
     const post = await Post.create({
       title,
       content,
       postedBy,
       categoryId,
+      featuredImage,
       userId: req.user.id,
     });
 
     res.status(201).json(post);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Error adding post" });
   }
 });
@@ -55,13 +62,18 @@ app.get("/:id", authMiddleware, async (req, res) => {
 });
 
 // Route to update a post
-app.put("/:id", authMiddleware, async (req, res) => {
+app.put("/:id", authMiddleware, upload.single("featuredImage"), async (req, res) => {
   try {
     const { title, content, postedBy, categoryId } = req.body;
-    const [affectedRows] = await Post.update(
-      { title, content, postedBy, categoryId },
-      { where: { id: req.params.id, userId: req.user.id } }
-    );
+    const updateData = { title, content, postedBy, categoryId };
+
+    if (req.file) {
+      updateData.featuredImage = req.file.path;
+    }
+
+    const [affectedRows] = await Post.update(updateData, {
+      where: { id: req.params.id, userId: req.user.id },
+    });
 
     if (affectedRows === 0) {
       return res.status(404).json({ error: "Post not found or you don't have permission to edit it" });

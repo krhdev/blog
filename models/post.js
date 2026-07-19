@@ -18,6 +18,10 @@ Post.init(
       type: DataTypes.TEXT,
       allowNull: false,
     },
+    featuredImage: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     createdOn: {
       type: DataTypes.DATE,
       allowNull: false,
