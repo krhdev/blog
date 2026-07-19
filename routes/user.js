@@ -44,7 +44,12 @@ router.post("/", async (req, res) => {
     const userData = await User.create(req.body);
 
     const token = signToken(userData);
-    res.status(200).json({ token, userData });
+
+    // Strip the password hash before sending the user object back
+    const safeUser = userData.toJSON();
+    delete safeUser.password;
+
+    res.status(200).json({ token, userData: safeUser });
   } catch (err) {
     res.status(400).json(err);
   }
@@ -90,7 +95,12 @@ router.post("/login", async (req, res) => {
     }
 
     const token = signToken(userData);
-    res.status(200).json({ token, userData });
+
+    // Strip the password hash before sending the user object back
+    const safeUser = userData.toJSON();
+    delete safeUser.password;
+
+    res.status(200).json({ token, userData: safeUser });
   } catch (err) {
     console.log(err);
     res.status(400).json(err);
