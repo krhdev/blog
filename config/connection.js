@@ -7,6 +7,19 @@ if (process.env.DB_PASSWORD === "ChangeMe!") {
   process.exit(1);
 }
 
+// Render's internal Postgres connections don't need SSL, but external
+// connections (e.g. from your local machine) do. Set DB_SSL=true in .env
+// when connecting from outside Render.
+const dialectOptions =
+  process.env.DB_SSL === "true"
+    ? {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false,
+        },
+      }
+    : {};
+
 const sequelize = process.env.JAWSDB_URL
   ? new Sequelize(process.env.JAWSDB_URL)
   : new Sequelize(
@@ -17,6 +30,7 @@ const sequelize = process.env.JAWSDB_URL
         host: process.env.DB_HOST,
         dialect: process.env.DB_DIALECT,
         port: process.env.DB_PORT,
+        dialectOptions,
       }
     );
 
