@@ -5,7 +5,7 @@ function register() {
   const username = document.getElementById("username").value;
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
-  fetch("http://localhost:3001/api/users", {
+  fetch("/api/users", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, email, password }),
@@ -26,7 +26,7 @@ function register() {
 function login() {
   const email = document.getElementById("login-email").value;
   const password = document.getElementById("login-password").value;
-  fetch("http://localhost:3001/api/users/login", {
+  fetch("/api/users/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -65,7 +65,7 @@ function login() {
 }
 
 function logout() {
-  fetch("http://localhost:3001/api/users/logout", {
+  fetch("/api/users/logout", {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
   }).then(() => {
@@ -80,7 +80,7 @@ function logout() {
 }
 
 function loadCategories() {
-  fetch("http://localhost:3001/api/categories", {
+  fetch("/api/categories", {
     headers: { Authorization: `Bearer ${token}` },
   })
     .then((res) => res.json())
@@ -111,7 +111,7 @@ function addCategory() {
   const category_name = input.value.trim();
   if (!category_name) return;
 
-  fetch("http://localhost:3001/api/categories", {
+  fetch("/api/categories", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -137,7 +137,7 @@ function fetchPosts() {
   const categoryId = document.getElementById("category-filter")?.value;
   const query = categoryId ? `?categoryId=${categoryId}` : "";
 
-  fetch(`http://localhost:3001/api/posts${query}`, {
+  fetch(`/api/posts${query}`, {
     method: "GET",
     headers: { Authorization: `Bearer ${token}` },
   })
@@ -201,7 +201,7 @@ function saveEditPost(postId) {
   const content = postDiv.querySelector(".edit-content-input").value;
   const postedBy = postDiv.dataset.postedBy;
 
-  fetch(`http://localhost:3001/api/posts/${postId}`, {
+  fetch(`/api/posts/${postId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -223,7 +223,7 @@ function saveEditPost(postId) {
 function deletePost(postId) {
   if (!confirm("Delete this post? This can't be undone.")) return;
 
-  fetch(`http://localhost:3001/api/posts/${postId}`, {
+  fetch(`/api/posts/${postId}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   })
@@ -253,7 +253,7 @@ function createPost() {
     formData.append("featuredImage", imageInput.files[0]);
   }
 
-  fetch("http://localhost:3001/api/posts", {
+  fetch("/api/posts", {
     method: "POST",
     headers: {
       // No Content-Type header here — the browser sets the correct
