@@ -10,59 +10,67 @@
 
 <body>
     <header class="site-header">
-    <img src="./assets/krhdev.png" alt="Tech Blog Logo">
+        <img src="./assets/krhdev.png" alt="Tech Blog Logo">
+        <h1>KRHDev Tech Blog</h1>
 
-    <h1>KRHDev Tech Blog</h1>
+        <div class="header-actions">
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 
-    <button
-        id="theme-toggle"
-        class="theme-toggle"
-        aria-label="Toggle dark mode">
-        🌙
-    </button>
+            <div class="auth-dropdown-wrap">
+                <button id="auth-toggle-btn" class="btn-auth-toggle" onclick="toggleAuthPanel()">Login / Register</button>
+
+                <div class="auth-panel hidden" id="auth-panel">
+                    <h2>Register</h2>
+                    <input type="text" id="username" placeholder="Username">
+                    <input type="email" id="email" placeholder="Email">
+                    <input type="password" id="password" placeholder="Password">
+                    <button onclick="register()">Register</button>
+                    <hr>
+                    <h2>Login</h2>
+                    <input type="email" id="login-email" placeholder="Email">
+                    <input type="password" id="login-password" placeholder="Password">
+                    <button onclick="login()">Login</button>
+                </div>
+            </div>
+
+            <div id="user-menu" class="user-menu hidden">
+                <button class="btn-logout-small" onclick="logout()">Logout</button>
+            </div>
+        </div>
     </header>
 
-
-    <div class="container" id="auth-card">
-        <h2>Register</h2>
-        <input type="text" id="username" placeholder="Username">
-        <input type="email" id="email" placeholder="Email">
-        <input type="password" id="password" placeholder="Password">
-        <button onclick="register()">Register</button>
-        <hr>
-        <h2>Login</h2>
-        <input type="email" id="login-email" placeholder="Email">
-        <input type="password" id="login-password" placeholder="Password">
-        <button onclick="login()">Login</button>
-    </div>
-
-    <div class="container hidden" id="app-container">
-        <h2 id="welcome-msg">Welcome</h2>
-        <button onclick="logout()">Logout</button>
-        <hr>
-        <h2>Create a Post</h2>
-        <input type="text" id="post-title" placeholder="Title">
-        <textarea id="post-content" placeholder="Content"></textarea>
-        <input type="file" id="post-image" accept="image/*">
-        <div class="category-row">
-          <select id="post-category">
-            <option value="">No category</option>
-          </select>
-          <input type="text" id="new-category-input" placeholder="New category">
-          <button class="btn-add-category" onclick="addCategory()">Add Category</button>
+    <main class="container" id="main-content">
+        <div class="hidden" id="create-post-section">
+            <h2 id="welcome-msg">Welcome</h2>
+            <h2>Create a Post</h2>
+            <input type="text" id="post-title" placeholder="Title">
+            <textarea id="post-content" placeholder="Content"></textarea>
+            <input type="file" id="post-image" accept="image/*">
+            <div class="category-row">
+                <select id="post-category">
+                    <option value="">No category</option>
+                </select>
+                <input type="text" id="new-category-input" placeholder="New category">
+                <button class="btn-add-category" onclick="addCategory()">Add Category</button>
+            </div>
+            <button onclick="createPost()">Submit Post</button>
+            <hr>
         </div>
-        <button onclick="createPost()">Submit Post</button>
-        <hr>
-        <h2>Posts</h2>
-        <div class="filter-row">
-          <label for="category-filter">Filter:</label>
-          <select id="category-filter" onchange="fetchPosts()">
-            <option value="">All categories</option>
-          </select>
+
+        <div class="hidden" id="profile-header"></div>
+
+        <div id="posts-heading-row">
+            <h2 id="posts-heading">Posts</h2>
+            <div class="filter-row" id="category-filter-row">
+                <label for="category-filter">Filter:</label>
+                <select id="category-filter" onchange="fetchPosts()">
+                    <option value="">All categories</option>
+                </select>
+            </div>
         </div>
-        <button onclick="fetchPosts()">Load Posts</button>
         <div id="posts"></div>
-    </div>
+        <div id="pagination" class="pagination"></div>
+    </main>
 
     <script src="./assets/script.js"></script>
 </body>

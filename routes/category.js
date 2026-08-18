@@ -19,8 +19,8 @@ app.post("/", authMiddleware, async (req, res) => {
   }
 });
 
-// Route to get all categories
-app.get("/", authMiddleware, async (req, res) => {
+// Route to get all categories — public
+app.get("/", async (req, res) => {
   try {
     const categories = await Category.findAll();
     res.json(categories);
@@ -29,8 +29,8 @@ app.get("/", authMiddleware, async (req, res) => {
   }
 });
 
-// Route to get a single category
-app.get("/:id", authMiddleware, async (req, res) => {
+// Route to get a single category — public
+app.get("/:id", async (req, res) => {
   try {
     const category = await Category.findByPk(req.params.id);
     if (!category) {

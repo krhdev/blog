@@ -1,5 +1,38 @@
 let token = localStorage.getItem("authToken");
 let currentUserId = localStorage.getItem("userId") ? Number(localStorage.getItem("userId")) : null;
+let currentUsername = localStorage.getItem("username") || null;
+let profileUserId = null;
+let currentPage = 1;
+
+function updateHeaderForLoggedInUser(username) {
+  document.getElementById("auth-toggle-btn").classList.add("hidden");
+  document.getElementById("user-menu").classList.remove("hidden");
+  document.getElementById("create-post-section").classList.remove("hidden");
+  document.getElementById("welcome-msg").textContent = `Welcome, ${username}!`;
+}
+
+function updateHeaderForLoggedOutUser() {
+  document.getElementById("auth-toggle-btn").classList.remove("hidden");
+  document.getElementById("user-menu").classList.add("hidden");
+  document.getElementById("create-post-section").classList.add("hidden");
+}
+
+function toggleAuthPanel() {
+  document.getElementById("auth-panel").classList.toggle("hidden");
+}
+
+function closeAuthPanel() {
+  document.getElementById("auth-panel").classList.add("hidden");
+}
+
+// Close the dropdown when clicking anywhere outside it
+document.addEventListener("click", (event) => {
+  const wrap = document.querySelector(".auth-dropdown-wrap");
+  const panel = document.getElementById("auth-panel");
+  if (wrap && panel && !wrap.contains(event.target)) {
+    panel.classList.add("hidden");
+  }
+});
 
 function register() {
   const username = document.getElementById("username").value;
@@ -15,7 +48,7 @@ function register() {
       if (data.errors) {
         alert(data.errors[0].message);
       } else {
-        alert("User registered successfully");
+        alert("User registered successfully — you can now log in");
       }
     })
     .catch((error) => {
@@ -33,28 +66,20 @@ function login() {
   })
     .then((res) => res.json())
     .then((data) => {
-      // Save the token in the local storage
       if (data.token) {
         localStorage.setItem("authToken", data.token);
         token = data.token;
 
-        alert("User Logged In successfully");
-
-        // Personalise the welcome message
         const username = data.userData?.username || "there";
-        document.getElementById("welcome-msg").textContent = `Welcome, ${username}!`;
-
-        // Track the logged-in user so we know which posts they own
         currentUserId = data.userData?.id || null;
+        currentUsername = username;
         if (currentUserId) localStorage.setItem("userId", currentUserId);
+        localStorage.setItem("username", username);
 
-        // Load categories, then the posts list
+        updateHeaderForLoggedInUser(username);
+        closeAuthPanel();
         loadCategories();
         fetchPosts();
-
-        // Hide the auth card and show the app container as we're now logged in
-        document.getElementById("auth-card").classList.add("hidden");
-        document.getElementById("app-container").classList.remove("hidden");
       } else {
         alert(data.message);
       }
@@ -69,20 +94,19 @@ function logout() {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
   }).then(() => {
-    // Clear the token from the local storage as we're now logged out
     localStorage.removeItem("authToken");
     localStorage.removeItem("userId");
+    localStorage.removeItem("username");
     token = null;
     currentUserId = null;
-    document.getElementById("auth-card").classList.remove("hidden");
-    document.getElementById("app-container").classList.add("hidden");
+    currentUsername = null;
+    updateHeaderForLoggedOutUser();
+    fetchPosts();
   });
 }
 
 function loadCategories() {
-  fetch("/api/categories", {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  fetch("/api/categories")
     .then((res) => res.json())
     .then((categories) => {
       const postSelect = document.getElementById("post-category");
@@ -133,16 +157,66 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-function fetchPosts() {
-  const categoryId = document.getElementById("category-filter")?.value;
-  const query = categoryId ? `?categoryId=${categoryId}` : "";
+function viewProfile(userId) {
+  profileUserId = userId;
 
-  fetch(`/api/posts${query}`, {
-    method: "GET",
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  fetch(`/api/users/${userId}`)
     .then((res) => res.json())
-    .then((posts) => {
+    .then((user) => {
+      const joinDate = new Date(user.createdOn).toLocaleDateString();
+      document.getElementById("profile-header").innerHTML = `
+        <div class="profile-card">
+          <button class="btn-back-to-posts" onclick="backToPosts()">&larr; Back to all posts</button>
+          <h2 class="profile-username">Viewing ${escapeHtml(user.username)}'s profile</h2>
+          <p class="profile-meta">Joined ${joinDate} &middot; ${user.postCount} post${user.postCount === 1 ? "" : "s"}</p>
+        </div>
+      `;
+      document.getElementById("profile-header").classList.remove("hidden");
+      document.getElementById("category-filter-row").classList.add("hidden");
+      document.getElementById("posts-heading").textContent = `Posts by ${user.username}`;
+
+      // Hide the post-creation form while viewing a profile
+      const createSection = document.getElementById("create-post-section");
+      if (createSection) createSection.classList.add("hidden");
+
+      currentPage = 1;
+      fetchPosts();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    })
+    .catch((error) => console.log(error));
+}
+
+function backToPosts() {
+  profileUserId = null;
+  document.getElementById("profile-header").classList.add("hidden");
+  document.getElementById("profile-header").innerHTML = "";
+  document.getElementById("category-filter-row").classList.remove("hidden");
+  document.getElementById("posts-heading").textContent = "Posts";
+
+  // Restore the post-creation form if logged in
+  const createSection = document.getElementById("create-post-section");
+  if (createSection && token) createSection.classList.remove("hidden");
+
+  currentPage = 1;
+  fetchPosts();
+}
+
+function fetchPosts() {
+  const params = new URLSearchParams();
+
+  if (profileUserId) {
+    params.set("userId", profileUserId);
+  } else {
+    const categoryId = document.getElementById("category-filter")?.value;
+    if (categoryId) params.set("categoryId", categoryId);
+  }
+
+  params.set("page", currentPage);
+
+  fetch(`/api/posts?${params.toString()}`)
+    .then((res) => res.json())
+    .then((data) => {
+      const posts = data.posts || [];
       const postsContainer = document.getElementById("posts");
       postsContainer.innerHTML = "";
       posts.forEach((post) => {
@@ -159,11 +233,15 @@ function fetchPosts() {
           ? `<img class="post-featured-image" src="${post.featuredImage}" alt="${escapeHtml(post.title)}">`
           : "";
 
+        const authorLink = post.author
+          ? `<span class="post-author-link" onclick="viewProfile(${post.author.id})">${escapeHtml(post.author.username)}</span>`
+          : escapeHtml(post.postedBy);
+
         div.innerHTML = `
           ${imageHtml}
           <h3 class="post-title">${escapeHtml(post.title)}${categoryBadge}</h3>
           <p class="post-content">${escapeHtml(post.content)}</p>
-          <small>By: ${escapeHtml(post.postedBy)} on ${new Date(
+          <small>By: ${authorLink} on ${new Date(
           post.createdOn
         ).toLocaleString()}</small>
           ${
@@ -174,9 +252,167 @@ function fetchPosts() {
                 </div>`
               : ""
           }
+          <div class="comments-section">
+            <div class="comments-list" id="comments-list-${post.id}"></div>
+            ${
+              token
+                ? `<div class="comment-form">
+                    <input type="text" id="comment-input-${post.id}" placeholder="Add a comment...">
+                    <button onclick="addComment(${post.id})">Post</button>
+                  </div>`
+                : ""
+            }
+          </div>
         `;
         postsContainer.appendChild(div);
+        loadComments(post.id);
       });
+
+      renderPagination(data.currentPage, data.totalPages);
+    });
+}
+
+function renderPagination(page, totalPages) {
+  const container = document.getElementById("pagination");
+  if (!container) return;
+
+  if (totalPages <= 1) {
+    container.innerHTML = "";
+    return;
+  }
+
+  container.innerHTML = `
+    <button class="btn-page-nav" ${page <= 1 ? "disabled" : ""} onclick="goToPage(${page - 1})">&larr; Prev</button>
+    <span class="page-indicator">Page ${page} of ${totalPages}</span>
+    <button class="btn-page-nav" ${page >= totalPages ? "disabled" : ""} onclick="goToPage(${page + 1})">Next &rarr;</button>
+  `;
+}
+
+function goToPage(page) {
+  currentPage = page;
+  fetchPosts();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function resetPageAndFetch() {
+  currentPage = 1;
+  fetchPosts();
+}
+
+function loadComments(postId) {
+  fetch(`/api/comments/post/${postId}`)
+    .then((res) => res.json())
+    .then((comments) => {
+      const list = document.getElementById(`comments-list-${postId}`);
+      if (!list) return;
+
+      if (comments.length === 0) {
+        list.innerHTML = `<p class="no-comments">No comments yet.</p>`;
+        return;
+      }
+
+      list.innerHTML = comments
+        .map((comment) => {
+          const isCommentOwner = currentUserId && comment.userId === currentUserId;
+          return `
+            <div class="comment-item" data-comment-id="${comment.id}">
+              <span class="comment-author">${escapeHtml(comment.author?.username || "Unknown")}</span>
+              <span class="comment-content">${escapeHtml(comment.content)}</span>
+              <small class="comment-date">${new Date(comment.createdOn).toLocaleString()}</small>
+              ${
+                isCommentOwner
+                  ? `<span class="comment-actions">
+                      <button class="btn-edit-comment" onclick="startEditComment(${comment.id}, ${postId})">Edit</button>
+                      <button class="btn-delete-comment" onclick="deleteComment(${comment.id}, ${postId})">Delete</button>
+                    </span>`
+                  : ""
+              }
+            </div>
+          `;
+        })
+        .join("");
+    })
+    .catch((error) => console.log(error));
+}
+
+function startEditComment(commentId, postId) {
+  const item = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
+  const currentContent = item.querySelector(".comment-content").textContent;
+
+  item.innerHTML = `
+    <input type="text" class="edit-comment-input" value="${escapeHtml(currentContent)}">
+    <span class="comment-actions">
+      <button class="btn-save-comment" onclick="saveEditComment(${commentId}, ${postId})">Save</button>
+      <button class="btn-cancel-comment" onclick="loadComments(${postId})">Cancel</button>
+    </span>
+  `;
+}
+
+function saveEditComment(commentId, postId) {
+  const item = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
+  const content = item.querySelector(".edit-comment-input").value;
+
+  fetch(`/api/comments/${commentId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ content }),
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Failed to update comment");
+      return res.json();
+    })
+    .then(() => loadComments(postId))
+    .catch((error) => {
+      alert(error.message);
+      console.log(error);
+    });
+}
+
+function addComment(postId) {
+  const input = document.getElementById(`comment-input-${postId}`);
+  const content = input.value.trim();
+  if (!content) return;
+
+  fetch("/api/comments", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ content, postId }),
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Failed to post comment");
+      return res.json();
+    })
+    .then(() => {
+      input.value = "";
+      loadComments(postId);
+    })
+    .catch((error) => {
+      alert(error.message);
+      console.log(error);
+    });
+}
+
+function deleteComment(commentId, postId) {
+  if (!confirm("Delete this comment?")) return;
+
+  fetch(`/api/comments/${commentId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Failed to delete comment");
+      return res.json();
+    })
+    .then(() => loadComments(postId))
+    .catch((error) => {
+      alert(error.message);
+      console.log(error);
     });
 }
 
@@ -247,7 +483,7 @@ function createPost() {
   const formData = new FormData();
   formData.append("title", title);
   formData.append("content", content);
-  formData.append("postedBy", "User");
+  formData.append("postedBy", currentUsername || "User");
   formData.append("categoryId", categoryId);
   if (imageInput.files[0]) {
     formData.append("featuredImage", imageInput.files[0]);
@@ -256,8 +492,6 @@ function createPost() {
   fetch("/api/posts", {
     method: "POST",
     headers: {
-      // No Content-Type header here — the browser sets the correct
-      // multipart/form-data boundary automatically for FormData
       Authorization: `Bearer ${token}`,
     },
     body: formData,
@@ -268,6 +502,7 @@ function createPost() {
       document.getElementById("post-title").value = "";
       document.getElementById("post-content").value = "";
       imageInput.value = "";
+      currentPage = 1;
       fetchPosts();
     })
     .catch((error) => {
@@ -275,6 +510,24 @@ function createPost() {
       console.log(error);
     });
 }
+
+// ── Enter key submits login/register forms ──
+function handleEnterKey(e, callback) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    callback();
+  }
+}
+
+["username", "email", "password"].forEach((id) => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener("keydown", (e) => handleEnterKey(e, register));
+});
+
+["login-email", "login-password"].forEach((id) => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener("keydown", (e) => handleEnterKey(e, login));
+});
 
 // ── Dark / Light mode toggle ──
 const themeToggle = document.getElementById("theme-toggle");
@@ -298,20 +551,14 @@ if (themeToggle) {
   });
 }
 
-// ── Enter key submits login/register forms ──
-function handleEnterKey(e, callback) {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    callback();
+// ── Page load: show posts publicly, restore session if logged in ──
+document.addEventListener("DOMContentLoaded", () => {
+  loadCategories();
+  fetchPosts();
+
+  if (token && currentUsername) {
+    updateHeaderForLoggedInUser(currentUsername);
+  } else {
+    updateHeaderForLoggedOutUser();
   }
-}
-
-["username", "email", "password"].forEach((id) => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener("keydown", (e) => handleEnterKey(e, register));
-});
-
-["login-email", "login-password"].forEach((id) => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener("keydown", (e) => handleEnterKey(e, login));
 });

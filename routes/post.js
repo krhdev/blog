@@ -2,13 +2,15 @@
 const app = require("express").Router();
 
 // import the models
-const { Post, Category } = require("../models/index");
+const { Post, Category, User } = require("../models/index");
 
 // import the auth middleware
 const { authMiddleware } = require("../utils/auth");
 
 // import the image upload middleware
 const upload = require("../utils/upload");
+
+const DEFAULT_PAGE_SIZE = 5;
 
 // Route to add a new post
 app.post("/", authMiddleware, upload.single("featuredImage"), async (req, res) => {
@@ -32,28 +34,49 @@ app.post("/", authMiddleware, upload.single("featuredImage"), async (req, res) =
   }
 });
 
-// Route to get all posts — optionally filtered by category via ?categoryId=X
-app.get("/", authMiddleware, async (req, res) => {
+// Route to get all posts — public, paginated, optionally filtered by
+// category (?categoryId=X) or author (?userId=X)
+app.get("/", async (req, res) => {
   try {
-    const { categoryId } = req.query;
-    const whereClause = categoryId ? { categoryId } : {};
+    const { categoryId, userId } = req.query;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.max(1, parseInt(req.query.limit) || DEFAULT_PAGE_SIZE);
+    const offset = (page - 1) * limit;
 
-    const posts = await Post.findAll({
+    const whereClause = {};
+    if (categoryId) whereClause.categoryId = categoryId;
+    if (userId) whereClause.userId = userId;
+
+    const { count, rows: posts } = await Post.findAndCountAll({
       where: whereClause,
-      include: { model: Category, as: "category" },
+      include: [
+        { model: Category, as: "category" },
+        { model: User, as: "author", attributes: ["id", "username"] },
+      ],
       order: [["createdOn", "DESC"]],
+      limit,
+      offset,
     });
 
-    res.status(200).json(posts);
+    res.status(200).json({
+      posts,
+      currentPage: page,
+      totalPages: Math.max(1, Math.ceil(count / limit)),
+      totalPosts: count,
+    });
   } catch (error) {
     res.status(500).json({ error: "Error retrieving posts", error });
   }
 });
 
-app.get("/:id", authMiddleware, async (req, res) => {
+// Route to get a single post — public
+app.get("/:id", async (req, res) => {
   try {
     const post = await Post.findByPk(req.params.id, {
-      include: { model: Category, as: "category" },
+      include: [
+        { model: Category, as: "category" },
+        { model: User, as: "author", attributes: ["id", "username"] },
+      ],
     });
     res.status(200).json(post);
   } catch (error) {

@@ -1,11 +1,13 @@
 const router = require("express").Router();
-const { User } = require("../models");
+const { User, Post } = require("../models");
 const { signToken, authMiddleware } = require("../utils/auth");
 
 // Get current authenticated user
 router.get("/me", authMiddleware, async (req, res) => {
   try {
-    const user = await User.getOne(req.user.id);
+    const user = await User.findByPk(req.user.id, {
+      attributes: { exclude: ["password"] },
+    });
     if (!user) return res.status(401).json({ message: "Token expired" });
     return res.status(200).json({ user });
   } catch (err) {
@@ -13,18 +15,21 @@ router.get("/me", authMiddleware, async (req, res) => {
   }
 });
 
-// GET the User record
+// GET public profile info for a user, plus their post count
 router.get("/:id", async (req, res) => {
-  console.log("looking for user", req.params.id);
   try {
-    const userData = await User.getOne(req.params.id);
+    const userData = await User.findByPk(req.params.id, {
+      attributes: ["id", "username", "createdOn"],
+    });
 
     if (!userData) {
       res.status(404).json({ message: "No User found with this id" });
       return;
     }
 
-    res.status(200).json(userData);
+    const postCount = await Post.count({ where: { userId: req.params.id } });
+
+    res.status(200).json({ ...userData.toJSON(), postCount });
   } catch (err) {
     res.status(500).json(err);
   }
@@ -32,7 +37,9 @@ router.get("/:id", async (req, res) => {
 
 router.get("/", authMiddleware, async (req, res) => {
   try {
-    const users = await User.findAll();
+    const users = await User.findAll({
+      attributes: { exclude: ["password"] },
+    });
     res.status(200).json(users);
   } catch (err) {
     res.status(400).json(err);
@@ -55,21 +62,25 @@ router.post("/", async (req, res) => {
   }
 });
 
-// UDPATE the User record
-router.put("/:id", async (req, res) => {
+// UPDATE the User record (only your own)
+router.put("/:id", authMiddleware, async (req, res) => {
   try {
-    const userData = await User.update(req.body, {
+    if (Number(req.params.id) !== req.user.id) {
+      return res.status(403).json({ message: "You can only update your own account" });
+    }
+
+    const [affectedRows] = await User.update(req.body, {
       where: {
         id: req.params.id,
       },
     });
 
-    if (!userData) {
+    if (affectedRows === 0) {
       res.status(404).json({ message: "No User found with this id" });
       return;
     }
 
-    res.status(200).json(userData);
+    res.status(200).json({ message: "User updated successfully" });
   } catch (err) {
     res.status(500).json(err);
   }
