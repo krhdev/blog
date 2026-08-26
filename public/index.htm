@@ -32,6 +32,12 @@
                     <input type="email" id="login-email" placeholder="Email">
                     <input type="password" id="login-password" placeholder="Password">
                     <button onclick="login()">Login</button>
+                    <a href="#" class="forgot-password-link" onclick="toggleForgotPassword(event)">Forgot password?</a>
+
+                    <div class="hidden" id="forgot-password-form">
+                        <input type="email" id="forgot-email" placeholder="Your email">
+                        <button onclick="submitForgotPassword()">Send Reset Link</button>
+                    </div>
                 </div>
             </div>
 
@@ -45,6 +51,10 @@
         <main class="container" id="main-content">
             <div class="hidden" id="create-post-section">
                 <h2 id="welcome-msg">Welcome</h2>
+                <label class="digest-toggle">
+                    <input type="checkbox" id="digest-checkbox" onchange="toggleDigestSubscription()">
+                    Email me weekly with new posts
+                </label>
                 <h2>Create a Post</h2>
                 <input type="text" id="post-title" placeholder="Title">
                 <textarea id="post-content" placeholder="Content"></textarea>
@@ -103,8 +113,8 @@
                 <h4>Affiliate Links</h4>
                 <p>Check out our affiliate partners for exclusive deals and offers.</p>
 
-                <a class="aff-item" href="https://swsstationery.my.canva.site/canva-membership" target="_blank" rel="noopener nofollow sponsored">
-                    <img src="./assets/canva_made_easy.jpg" alt="Canva Club">
+                <a class="aff-item" href="https://designandinnovativeitservices.co.uk/it-services/" target="_blank" rel="noopener nofollow sponsored">
+                    <img src="./assets/canva-club.jpg" alt="Canva Club">
                     <span>Canva Club</span>
                 </a>
 

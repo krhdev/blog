@@ -117,6 +117,29 @@ function resendVerification() {
     .catch((error) => console.log(error));
 }
 
+function toggleForgotPassword(event) {
+  event.preventDefault();
+  document.getElementById("forgot-password-form").classList.toggle("hidden");
+}
+
+function submitForgotPassword() {
+  const email = document.getElementById("forgot-email").value.trim();
+  if (!email) return;
+
+  fetch("/api/users/forgot-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      alert(data.message);
+      document.getElementById("forgot-email").value = "";
+      document.getElementById("forgot-password-form").classList.add("hidden");
+    })
+    .catch((error) => console.log(error));
+}
+
 function logout() {
   fetch("/api/users/logout", {
     method: "POST",
@@ -593,9 +616,30 @@ document.addEventListener("DOMContentLoaded", () => {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
-      .then((data) => showVerificationBanner(data.user?.verified))
+      .then((data) => {
+        showVerificationBanner(data.user?.verified);
+        const checkbox = document.getElementById("digest-checkbox");
+        if (checkbox) checkbox.checked = !!data.user?.digestSubscribed;
+      })
       .catch((error) => console.log(error));
   } else {
     updateHeaderForLoggedOutUser();
   }
 });
+
+function toggleDigestSubscription() {
+  const checkbox = document.getElementById("digest-checkbox");
+  const digestSubscribed = checkbox.checked;
+
+  fetch(`/api/users/${currentUserId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ digestSubscribed }),
+  }).catch((error) => {
+    console.log(error);
+    checkbox.checked = !digestSubscribed; // revert on failure
+  });
+}

@@ -2,7 +2,7 @@ const router = require("express").Router();
 const crypto = require("crypto");
 const { User, Post } = require("../models");
 const { signToken, authMiddleware } = require("../utils/auth");
-const { sendVerificationEmail } = require("../utils/email");
+const { sendVerificationEmail, sendPasswordResetEmail } = require("../utils/email");
 
 // Get current authenticated user
 router.get("/me", authMiddleware, async (req, res) => {
@@ -189,6 +189,58 @@ router.post("/login", async (req, res) => {
 
 router.post("/logout", (req, res) => {
   res.status(204).end();
+});
+
+// Request a password reset — always responds the same way whether or not
+// the email exists, so we don't leak which emails are registered
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ where: { email } });
+
+    if (user) {
+      const resetToken = crypto.randomBytes(32).toString("hex");
+      user.resetToken = resetToken;
+      user.resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+      await user.save();
+
+      await sendPasswordResetEmail(user.email, user.username, resetToken);
+    }
+
+    res.status(200).json({
+      message: "If that email is registered, a reset link has been sent.",
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Error processing password reset request" });
+  }
+});
+
+// Complete a password reset using the token from the email
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 8) {
+      return res.status(400).json({ message: "Password must be at least 8 characters" });
+    }
+
+    const user = await User.findOne({
+      where: { resetToken: token },
+    });
+
+    if (!user || !user.resetTokenExpiry || user.resetTokenExpiry < new Date()) {
+      return res.status(400).json({ message: "This reset link is invalid or has expired" });
+    }
+
+    user.password = newPassword;
+    user.resetToken = null;
+    user.resetTokenExpiry = null;
+    await user.save();
+
+    res.status(200).json({ message: "Password updated — you can now log in" });
+  } catch (err) {
+    res.status(500).json({ message: "Error resetting password" });
+  }
 });
 
 module.exports = router;
