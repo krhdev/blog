@@ -3,7 +3,7 @@ const { Resend } = require("resend");
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Swap this for a verified domain address once you've set one up in Resend
-const FROM_ADDRESS = "KRHDev Tech Blog <onboarding@resend.dev>";
+const FROM_ADDRESS = "KRHDev Tech Blog <no-reply@krh1.co.uk>";
 
 async function sendVerificationEmail(toEmail, username, token) {
   const verifyUrl = `${process.env.APP_URL}/api/users/verify/${token}`;
