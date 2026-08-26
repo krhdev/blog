@@ -1,12 +1,14 @@
 const router = require("express").Router();
+const crypto = require("crypto");
 const { User, Post } = require("../models");
 const { signToken, authMiddleware } = require("../utils/auth");
+const { sendVerificationEmail } = require("../utils/email");
 
 // Get current authenticated user
 router.get("/me", authMiddleware, async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
-      attributes: { exclude: ["password"] },
+      attributes: { exclude: ["password", "verificationToken"] },
     });
     if (!user) return res.status(401).json({ message: "Token expired" });
     return res.status(200).json({ user });
@@ -38,7 +40,7 @@ router.get("/:id", async (req, res) => {
 router.get("/", authMiddleware, async (req, res) => {
   try {
     const users = await User.findAll({
-      attributes: { exclude: ["password"] },
+      attributes: { exclude: ["password", "verificationToken"] },
     });
     res.status(200).json(users);
   } catch (err) {
@@ -46,19 +48,85 @@ router.get("/", authMiddleware, async (req, res) => {
   }
 });
 
+// Register — creates the account, sends a verification email
 router.post("/", async (req, res) => {
   try {
-    const userData = await User.create(req.body);
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+
+    const userData = await User.create({
+      ...req.body,
+      verificationToken,
+    });
+
+    await sendVerificationEmail(userData.email, userData.username, verificationToken);
 
     const token = signToken(userData);
 
-    // Strip the password hash before sending the user object back
+    // Strip sensitive fields before sending the user object back
     const safeUser = userData.toJSON();
     delete safeUser.password;
+    delete safeUser.verificationToken;
 
     res.status(200).json({ token, userData: safeUser });
   } catch (err) {
     res.status(400).json(err);
+  }
+});
+
+// Confirm a verification link — simple HTML response, no front-end route needed
+router.get("/verify/:token", async (req, res) => {
+  try {
+    const user = await User.findOne({
+      where: { verificationToken: req.params.token },
+    });
+
+    if (!user) {
+      return res.status(400).send(`
+        <html><body style="font-family: sans-serif; text-align: center; padding: 60px 20px;">
+          <h2>Verification link invalid or expired</h2>
+          <p>Please log in and request a new verification email.</p>
+        </body></html>
+      `);
+    }
+
+    user.verified = true;
+    user.verificationToken = null;
+    await user.save();
+
+    res.send(`
+      <html><body style="font-family: sans-serif; text-align: center; padding: 60px 20px;">
+        <h2>Email verified!</h2>
+        <p>You can close this tab and head back to the blog.</p>
+        <a href="${process.env.APP_URL}">Return to KRHDev Tech Blog</a>
+      </body></html>
+    `);
+  } catch (err) {
+    res.status(500).send("Something went wrong verifying your email.");
+  }
+});
+
+// Resend the verification email (for logged-in but unverified users)
+router.post("/resend-verification", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.verified) {
+      return res.status(400).json({ message: "Your email is already verified" });
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    user.verificationToken = verificationToken;
+    await user.save();
+
+    await sendVerificationEmail(user.email, user.username, verificationToken);
+
+    res.status(200).json({ message: "Verification email sent" });
+  } catch (err) {
+    res.status(500).json({ message: "Error resending verification email" });
   }
 });
 
@@ -107,9 +175,10 @@ router.post("/login", async (req, res) => {
 
     const token = signToken(userData);
 
-    // Strip the password hash before sending the user object back
+    // Strip sensitive fields before sending the user object back
     const safeUser = userData.toJSON();
     delete safeUser.password;
+    delete safeUser.verificationToken;
 
     res.status(200).json({ token, userData: safeUser });
   } catch (err) {

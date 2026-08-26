@@ -5,8 +5,6 @@ const sequelize = require("../config/connection");
 
 class User extends Model {
   checkPassword(loginPw) {
-    console.log("Login attempt:", JSON.stringify(loginPw));
-    console.log("Stored hash:", this.password);
     return bcrypt.compareSync(loginPw, this.password);
   }
 }
@@ -37,6 +35,15 @@ User.init(
       validate: {
         len: [8],
       },
+    },
+    verified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    verificationToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     createdOn: {
       type: DataTypes.DATE,

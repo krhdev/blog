@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -39,38 +41,90 @@
         </div>
     </header>
 
-    <main class="container" id="main-content">
-        <div class="hidden" id="create-post-section">
-            <h2 id="welcome-msg">Welcome</h2>
-            <h2>Create a Post</h2>
-            <input type="text" id="post-title" placeholder="Title">
-            <textarea id="post-content" placeholder="Content"></textarea>
-            <input type="file" id="post-image" accept="image/*">
-            <div class="category-row">
-                <select id="post-category">
-                    <option value="">No category</option>
-                </select>
-                <input type="text" id="new-category-input" placeholder="New category">
-                <button class="btn-add-category" onclick="addCategory()">Add Category</button>
+    <div class="page-layout">
+        <main class="container" id="main-content">
+            <div class="hidden" id="create-post-section">
+                <h2 id="welcome-msg">Welcome</h2>
+                <h2>Create a Post</h2>
+                <input type="text" id="post-title" placeholder="Title">
+                <textarea id="post-content" placeholder="Content"></textarea>
+                <input type="file" id="post-image" accept="image/*">
+                <div class="category-row">
+                    <select id="post-category">
+                        <option value="">No category</option>
+                    </select>
+                    <input type="text" id="new-category-input" placeholder="New category">
+                    <button class="btn-add-category" onclick="addCategory()">Add Category</button>
+                </div>
+                <button onclick="createPost()">Submit Post</button>
+                <hr>
             </div>
-            <button onclick="createPost()">Submit Post</button>
-            <hr>
-        </div>
 
-        <div class="hidden" id="profile-header"></div>
+            <div class="hidden" id="profile-header"></div>
 
-        <div id="posts-heading-row">
-            <h2 id="posts-heading">Posts</h2>
-            <div class="filter-row" id="category-filter-row">
-                <label for="category-filter">Filter:</label>
-                <select id="category-filter" onchange="fetchPosts()">
-                    <option value="">All categories</option>
-                </select>
+            <div id="posts-heading-row">
+                <h2 id="posts-heading">Posts</h2>
+                <div class="filter-row" id="category-filter-row">
+                    <label for="category-filter">Filter:</label>
+                    <select id="category-filter" onchange="resetPageAndFetch()">
+                        <option value="">All categories</option>
+                    </select>
+                </div>
             </div>
-        </div>
-        <div id="posts"></div>
-        <div id="pagination" class="pagination"></div>
-    </main>
+            <div id="posts"></div>
+            <div id="pagination" class="pagination"></div>
+        </main>
+
+        <aside class="promo-sidebar">
+            <div class="promo-card">
+                <img src="./assets/design_logo.png" alt="Design & Innovative IT Services logo">
+                <h3>Need IT Support or a New Website?</h3>
+                <p>No jargon IT support and web design for small businesses and non-technical teams.</p>
+                <a class="promo-cta" href="https://designandinnovativeitservices.co.uk/" target="_blank" rel="noopener">Visit Design &amp; Innovative IT Services</a>
+            </div>
+
+            <div class="membership-info">
+                <a href="https://designandinnovativeitservices.co.uk/product/membership/" target="_blank" rel="noopener">
+                    <img src="./assets/membership.png" alt="Membership details">
+                </a>
+                <h4>Membership</h4>
+                <p>Get exclusive access to our resources, on hand support, and networking opportunities.</p>
+                <a class="promo-cta" href="https://designandinnovativeitservices.co.uk/product/membership/" target="_blank" rel="noopener">Learn More</a>
+            </div>
+
+            <div class="promo-links">
+                <h4>Our Services</h4>
+                <a href="https://designandinnovativeitservices.co.uk/it-services/" target="_blank" rel="noopener">IT Services</a>
+                <a href="https://designandinnovativeitservices.co.uk/design-services/" target="_blank" rel="noopener">Design Services</a>
+                <a href="https://designandinnovativeitservices.co.uk/contact/" target="_blank" rel="noopener">Get in Touch</a>
+            </div>
+
+            <div class="aff-links">
+                <h4>Affiliate Links</h4>
+                <p>Check out our affiliate partners for exclusive deals and offers.</p>
+
+                <a class="aff-item" href="https://swsstationery.my.canva.site/canva-membership" target="_blank" rel="noopener nofollow sponsored">
+                    <img src="./assets/canva_made_easy.jpg" alt="Canva Club">
+                    <span>Canva Club</span>
+                </a>
+
+                <a class="aff-item" href="https://designandinnovativeitservices.co.uk/design-services/" target="_blank" rel="noopener nofollow sponsored">
+                    <img src="./assets/design-services.png" alt="Design Services">
+                    <span>Design Services</span>
+                </a>
+
+                <a class="aff-item" href="https://designandinnovativeitservices.co.uk/contact/" target="_blank" rel="noopener nofollow sponsored">
+                    <img src="./assets/contact.png" alt="Contact">
+                    <span>Get in Touch</span>
+                </a>
+
+                <a class="aff-item aff-item-placeholder" href="https://designandinnovativeitservices.co.uk/contact/" target="_blank" rel="noopener">
+                    <span class="aff-placeholder-icon">+</span>
+                    <span>Get Your Business Shown Here</span>
+                </a>
+            </div>
+        </aside>
+    </div>
 
     <script src="./assets/script.js"></script>
 </body>

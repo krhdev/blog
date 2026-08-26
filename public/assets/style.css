@@ -759,3 +759,288 @@ h1 {
     font-size: 0.85rem;
     color: var(--text-muted);
 }
+
+/* ── Two-column page layout ── */
+.page-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: clamp(16px, 3vw, 32px);
+    width: 100%;
+}
+
+.page-layout #main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ══════════════════════════════════════════════════════════
+   PROMO SIDEBAR
+   ══════════════════════════════════════════════════════════ */
+
+.promo-sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: sticky;
+    top: 20px;
+}
+
+/* ── Shared "card" look ──
+   promo-card and membership-info both use this basic shape:
+   image + heading + blurb + one CTA button (class="promo-cta"). */
+.promo-card,
+.membership-info {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 3px 12px var(--shadow);
+}
+
+.promo-card img,
+.membership-info img {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.promo-card h3,
+.membership-info h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--brand);
+    margin-bottom: 8px;
+    line-height: 1.35;
+}
+
+[data-theme="dark"] .promo-card h3,
+[data-theme="dark"] .membership-info h4 {
+    color: var(--brand-readable);
+}
+
+.promo-card p,
+.membership-info p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 16px;
+}
+
+/* CTA button — add class="promo-cta" to any link that should look
+   like a solid call-to-action button (used by both cards above). */
+.promo-cta {
+    display: block;
+    padding: 10px 16px;
+    background: var(--brand);
+    color: white;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s;
+}
+
+.promo-cta:hover { background: var(--brand-dark); }
+
+/* ── Shared "link list" look ──
+   promo-links (Our Services) is a heading + plain vertical links. */
+.promo-links {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 20px 24px;
+    box-shadow: 0 3px 12px var(--shadow);
+}
+
+.promo-links h4 {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.promo-links a {
+    display: block;
+    padding: 8px 0;
+    color: var(--text);
+    font-size: 0.9rem;
+    text-decoration: none;
+    border-top: 1px solid var(--border);
+    transition: color 0.15s;
+}
+
+.promo-links a:first-of-type {
+    border-top: none;
+}
+
+.promo-links a:hover {
+    color: var(--brand);
+}
+
+[data-theme="dark"] .promo-links a:hover {
+    color: var(--brand-readable);
+}
+
+/* ── Affiliate links ──
+   Same card shell as promo-links, but each entry (.aff-item) is a
+   clickable image + caption instead of plain text. To add a new
+   affiliate, copy one <a class="aff-item"> block in index.htm. */
+.aff-links {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 20px 24px;
+    box-shadow: 0 3px 12px var(--shadow);
+}
+
+.aff-links h4 {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.aff-links > p {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-bottom: 14px;
+}
+
+.aff-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    text-decoration: none;
+    transition: opacity 0.15s;
+}
+
+.aff-item:first-of-type {
+    border-top: none;
+}
+
+.aff-item:hover {
+    opacity: 0.75;
+}
+
+.aff-item img {
+    width: 100px;
+    height: 100px;
+    border-radius: 10px;
+    object-fit: contain;
+    background: var(--surface-2, var(--bg));
+    padding: 6px;
+    flex-shrink: 0;
+}
+
+.aff-item span {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+[data-theme="dark"] .aff-item span {
+    color: var(--text);
+}
+
+/* ── Placeholder ad slot ──
+   Visually distinct (dashed border, muted) from real affiliate
+   entries, to invite future sponsors without looking like a live link. */
+.aff-item-placeholder {
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 4px;
+}
+
+.aff-item-placeholder:first-of-type {
+    border-top: 1px dashed var(--border);
+}
+
+.aff-placeholder-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+    border-radius: 10px;
+    background: var(--surface-2, var(--bg));
+    color: var(--text-muted);
+    font-size: 1.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.aff-item-placeholder span:last-child {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-style: italic;
+}
+
+/* Stack sidebar below content on smaller screens */
+@media (max-width: 900px) {
+    .page-layout {
+        flex-direction: column;
+    }
+
+    .promo-sidebar {
+        width: 100%;
+        position: static;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .promo-card,
+    .membership-info,
+    .promo-links,
+    .aff-links {
+        flex: 1 1 260px;
+    }
+}
+/* ── Email verification reminder banner ── */
+.verify-banner {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 10px 20px;
+    background: #f0a500;
+    color: #1a1a1a;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.verify-banner button {
+    padding: 5px 14px;
+    border: 1px solid rgba(0,0,0,0.25);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.3);
+    color: #1a1a1a;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.verify-banner button:hover { background: rgba(255,255,255,0.5); }
+
+.verify-banner-close {
+    padding: 4px 8px !important;
+    border: none !important;
+    background: none !important;
+    font-size: 1.1rem !important;
+    line-height: 1;
+}

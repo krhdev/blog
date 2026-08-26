@@ -48,7 +48,7 @@ function register() {
       if (data.errors) {
         alert(data.errors[0].message);
       } else {
-        alert("User registered successfully — you can now log in");
+        alert("Registered! Check your email for a verification link, then log in.");
       }
     })
     .catch((error) => {
@@ -77,6 +77,7 @@ function login() {
         localStorage.setItem("username", username);
 
         updateHeaderForLoggedInUser(username);
+        showVerificationBanner(data.userData?.verified);
         closeAuthPanel();
         loadCategories();
         fetchPosts();
@@ -87,6 +88,33 @@ function login() {
     .catch((error) => {
       console.log(error);
     });
+}
+
+function showVerificationBanner(isVerified) {
+  const existing = document.getElementById("verify-banner");
+  if (existing) existing.remove();
+
+  if (isVerified) return;
+
+  const banner = document.createElement("div");
+  banner.id = "verify-banner";
+  banner.className = "verify-banner";
+  banner.innerHTML = `
+    <span>Please verify your email to unlock full access — check your inbox.</span>
+    <button onclick="resendVerification()">Resend email</button>
+    <button class="verify-banner-close" onclick="document.getElementById('verify-banner').remove()">&times;</button>
+  `;
+  document.body.prepend(banner);
+}
+
+function resendVerification() {
+  fetch("/api/users/resend-verification", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then((res) => res.json())
+    .then((data) => alert(data.message))
+    .catch((error) => console.log(error));
 }
 
 function logout() {
@@ -101,6 +129,8 @@ function logout() {
     currentUserId = null;
     currentUsername = null;
     updateHeaderForLoggedOutUser();
+    const banner = document.getElementById("verify-banner");
+    if (banner) banner.remove();
     fetchPosts();
   });
 }
@@ -558,6 +588,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (token && currentUsername) {
     updateHeaderForLoggedInUser(currentUsername);
+
+    fetch("/api/users/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => showVerificationBanner(data.user?.verified))
+      .catch((error) => console.log(error));
   } else {
     updateHeaderForLoggedOutUser();
   }
