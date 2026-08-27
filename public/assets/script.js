@@ -256,6 +256,7 @@ function fetchPosts() {
         div.className = "post-item";
         div.dataset.postId = post.id;
         div.dataset.postedBy = post.postedBy;
+        div.dataset.categoryId = post.categoryId || "";
 
         const isOwner = currentUserId && post.userId === currentUserId;
         const categoryBadge = post.category
@@ -271,7 +272,7 @@ function fetchPosts() {
 
         div.innerHTML = `
           ${imageHtml}
-          <h3 class="post-title">${escapeHtml(post.title)}${categoryBadge}</h3>
+          <h3 class="post-title"><span class="post-title-text">${escapeHtml(post.title)}</span>${categoryBadge}</h3>
           <p class="post-content">${escapeHtml(post.content)}</p>
           <small>By: ${authorLink} on ${new Date(
           post.createdOn
@@ -450,23 +451,31 @@ function deleteComment(commentId, postId) {
 
 function startEditPost(postId) {
   const postDiv = document.querySelector(`[data-post-id="${postId}"]`);
-  const currentTitle = postDiv.querySelector(".post-title").textContent;
+  const currentTitle = postDiv.querySelector(".post-title-text").textContent;
   const currentContent = postDiv.querySelector(".post-content").textContent;
+  const currentCategoryId = postDiv.dataset.categoryId;
+
+  // Reuse the same category options already loaded in the create-post dropdown
+  const sourceOptions = document.getElementById("post-category").innerHTML;
 
   postDiv.innerHTML = `
     <input type="text" class="edit-title-input" value="${escapeHtml(currentTitle)}">
     <textarea class="edit-content-input">${escapeHtml(currentContent)}</textarea>
+    <select class="edit-category-input">${sourceOptions}</select>
     <div class="post-actions">
       <button class="btn-save-post" onclick="saveEditPost(${postId})">Save</button>
       <button class="btn-cancel-post" onclick="fetchPosts()">Cancel</button>
     </div>
   `;
+
+  postDiv.querySelector(".edit-category-input").value = currentCategoryId;
 }
 
 function saveEditPost(postId) {
   const postDiv = document.querySelector(`[data-post-id="${postId}"]`);
   const title = postDiv.querySelector(".edit-title-input").value;
   const content = postDiv.querySelector(".edit-content-input").value;
+  const categoryId = postDiv.querySelector(".edit-category-input").value;
   const postedBy = postDiv.dataset.postedBy;
 
   fetch(`/api/posts/${postId}`, {
@@ -475,7 +484,7 @@ function saveEditPost(postId) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ title, content, postedBy }),
+    body: JSON.stringify({ title, content, postedBy, categoryId }),
   })
     .then((res) => {
       if (!res.ok) throw new Error("Failed to update post");
