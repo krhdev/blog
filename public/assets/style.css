@@ -274,12 +274,11 @@ h1 {
 .category-row {
     display: flex;
     gap: 8px;
-    flex-wrap: wrap;
     align-items: center;
 }
 
-.category-row select,
-.category-row input {
+.category-row select {
+    width: 100%;
     padding: 9px 12px;
     border: 1px solid var(--input-border);
     border-radius: 8px;
@@ -288,25 +287,6 @@ h1 {
     background: var(--surface);
     color: var(--text);
 }
-
-.category-row select { flex: 1 1 140px; }
-.category-row input { flex: 1 1 160px; }
-
-.btn-add-category {
-    padding: 9px 16px;
-    background: var(--brand);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-family: inherit;
-    font-weight: 600;
-    white-space: nowrap;
-    transition: background 0.15s;
-}
-
-.btn-add-category:hover { background: var(--brand-dark); }
 
 /* ── Category filter (posts list) ── */
 .filter-row {

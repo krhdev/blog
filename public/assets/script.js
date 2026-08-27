@@ -183,27 +183,6 @@ function loadCategories() {
     .catch((error) => console.log(error));
 }
 
-function addCategory() {
-  const input = document.getElementById("new-category-input");
-  const category_name = input.value.trim();
-  if (!category_name) return;
-
-  fetch("/api/categories", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ category_name }),
-  })
-    .then((res) => res.json())
-    .then(() => {
-      input.value = "";
-      loadCategories();
-    })
-    .catch((error) => console.log(error));
-}
-
 function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str;
