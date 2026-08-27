@@ -766,11 +766,13 @@ h1 {
     align-items: flex-start;
     gap: clamp(16px, 3vw, 32px);
     width: 100%;
+    max-width: 900px;
 }
 
 .page-layout #main-content {
     flex: 1;
     min-width: 0;
+    max-width: 600px;
     margin-top: 0;
 }
 
