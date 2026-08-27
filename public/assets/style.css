@@ -42,7 +42,7 @@ body, html {
     flex-direction: column;
     align-items: center;
     line-height: 1.5;
-    padding: 0 clamp(16px, 6vw, 96px);
+    padding: 0 clamp(16px, 4vw, 56px);
     transition: background-color 0.2s, color 0.2s;
 }
 
@@ -778,7 +778,7 @@ h1 {
    ══════════════════════════════════════════════════════════ */
 
 .promo-sidebar {
-    width: 300px;
+    width: 260px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
