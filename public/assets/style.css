@@ -1110,3 +1110,19 @@ h1 {
     color: var(--text);
     margin-bottom: 8px;
 }
+
+/* ── Create post section layout ── */
+#create-post-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: clamp(12px, 1.5vw, 18px);
+}
+
+#create-post-section input,
+#create-post-section textarea,
+#create-post-section select,
+#create-post-section .category-row,
+#create-post-section .digest-toggle {
+    align-self: stretch;
+}
