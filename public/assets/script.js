@@ -3,6 +3,7 @@ let currentUserId = localStorage.getItem("userId") ? Number(localStorage.getItem
 let currentUsername = localStorage.getItem("username") || null;
 let profileUserId = null;
 let currentPage = 1;
+let postContentEditor = null;
 
 function updateHeaderForLoggedInUser(username) {
   document.getElementById("auth-toggle-btn").classList.add("hidden");
@@ -189,6 +190,14 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+function sanitizeHtml(html) {
+  if (typeof DOMPurify === "undefined") return escapeHtml(html || "");
+  return DOMPurify.sanitize(html || "", {
+    ALLOWED_TAGS: ["p", "br", "strong", "em", "b", "i", "u", "ol", "ul", "li", "a"],
+    ALLOWED_ATTR: ["href", "target", "rel"],
+  });
+}
+
 function viewProfile(userId) {
   profileUserId = userId;
 
@@ -273,7 +282,7 @@ function fetchPosts() {
         div.innerHTML = `
           ${imageHtml}
           <h3 class="post-title"><span class="post-title-text">${escapeHtml(post.title)}</span>${categoryBadge}</h3>
-          <p class="post-content">${escapeHtml(post.content)}</p>
+          <div class="post-content">${sanitizeHtml(post.content)}</div>
           <small>By: ${authorLink} on ${new Date(
           post.createdOn
         ).toLocaleString()}</small>
@@ -517,7 +526,7 @@ function deletePost(postId) {
 
 function createPost() {
   const title = document.getElementById("post-title").value;
-  const content = document.getElementById("post-content").value;
+  const content = postContentEditor ? postContentEditor.root.innerHTML : "";
   const categoryId = document.getElementById("post-category").value || "";
   const imageInput = document.getElementById("post-image");
 
@@ -541,7 +550,7 @@ function createPost() {
     .then(() => {
       alert("Post created successfully");
       document.getElementById("post-title").value = "";
-      document.getElementById("post-content").value = "";
+      if (postContentEditor) postContentEditor.setText("");
       imageInput.value = "";
       currentPage = 1;
       fetchPosts();
@@ -596,6 +605,17 @@ if (themeToggle) {
 document.addEventListener("DOMContentLoaded", () => {
   loadCategories();
   fetchPosts();
+
+  const editorEl = document.getElementById("post-content-editor");
+  if (editorEl && typeof Quill !== "undefined") {
+    postContentEditor = new Quill("#post-content-editor", {
+      theme: "snow",
+      placeholder: "Content",
+      modules: {
+        toolbar: [["bold", "italic"], [{ list: "ordered" }, { list: "bullet" }], ["link"]],
+      },
+    });
+  }
 
   if (token && currentUsername) {
     updateHeaderForLoggedInUser(currentUsername);

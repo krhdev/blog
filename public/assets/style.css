@@ -1126,3 +1126,62 @@ h1 {
 #create-post-section .digest-toggle {
     align-self: stretch;
 }
+
+/* ── Quill rich text editor (post form) ── */
+#post-content-editor {
+    background: var(--surface);
+    border-radius: 8px;
+    color: var(--text);
+}
+
+#post-content-editor .ql-editor {
+    min-height: 120px;
+    font-size: clamp(0.95rem, 1vw, 1.05rem);
+    font-family: inherit;
+    color: var(--text);
+}
+
+.ql-toolbar.ql-snow {
+    border-color: var(--input-border) !important;
+    border-radius: 8px 8px 0 0;
+    background: var(--surface);
+}
+
+.ql-container.ql-snow {
+    border-color: var(--input-border) !important;
+    border-radius: 0 0 8px 8px;
+}
+
+.ql-snow .ql-stroke { stroke: var(--text-muted); }
+.ql-snow .ql-fill { fill: var(--text-muted); }
+.ql-snow .ql-picker { color: var(--text-muted); }
+
+.ql-editor.ql-blank::before {
+    color: var(--text-muted);
+    font-style: normal;
+}
+
+/* ── Rendered rich text content on post cards ── */
+#posts .post-content {
+    font-size: clamp(0.92rem, 1.1vw, 1.1rem);
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: clamp(8px, 1vw, 14px);
+}
+
+#posts .post-content p { margin-bottom: 8px; }
+#posts .post-content p:last-child { margin-bottom: 0; }
+
+#posts .post-content ul,
+#posts .post-content ol {
+    margin: 8px 0 8px 22px;
+}
+
+#posts .post-content a {
+    color: var(--brand);
+    text-decoration: underline;
+}
+
+[data-theme="dark"] #posts .post-content a {
+    color: var(--brand-readable);
+}
