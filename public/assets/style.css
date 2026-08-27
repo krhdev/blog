@@ -37,6 +37,7 @@ body, html {
     font-family: 'Roboto', sans-serif;
     background-color: var(--bg);
     color: var(--text);
+    width: 100%;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
