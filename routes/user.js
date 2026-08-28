@@ -166,14 +166,29 @@ router.post("/resend-verification", authMiddleware, async (req, res) => {
   }
 });
 
-// UPDATE the User record (only your own)
+// UPDATE the User record (only your own, and only safe fields)
 router.put("/:id", authMiddleware, async (req, res) => {
   try {
     if (Number(req.params.id) !== req.user.id) {
       return res.status(403).json({ message: "You can only update your own account" });
     }
 
-    const [affectedRows] = await User.update(req.body, {
+    // Whitelist explicitly — never let isAdmin, autoApprove, verified, or
+    // any other sensitive field be set through a user's own self-update
+    // route, no matter what the request body contains.
+    const allowedFields = ["digestSubscribed"];
+    const updateData = {};
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: "No valid fields to update" });
+    }
+
+    const [affectedRows] = await User.update(updateData, {
       where: {
         id: req.params.id,
       },
