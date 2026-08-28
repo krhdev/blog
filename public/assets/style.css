@@ -997,9 +997,9 @@ body, html {
     justify-content: center;
     flex-wrap: wrap;
     gap: 12px;
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
-    padding: 10px 20px;
+    margin-left: calc(-1 * clamp(16px, 4vw, 56px));
+    margin-right: calc(-1 * clamp(16px, 4vw, 56px));
+    padding: 10px clamp(16px, 4vw, 56px);
     background: #f0a500;
     color: #1a1a1a;
     font-size: 0.85rem;
