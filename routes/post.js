@@ -5,7 +5,7 @@ const app = require("express").Router();
 const { Post, Category, User } = require("../models/index");
 
 // import the auth middleware
-const { authMiddleware } = require("../utils/auth");
+const { authMiddleware, optionalAuth, adminMiddleware } = require("../utils/auth");
 
 // import the image upload middleware
 const upload = require("../utils/upload");
@@ -18,6 +18,11 @@ app.post("/", authMiddleware, upload.single("featuredImage"), async (req, res) =
     const { title, content, postedBy, categoryId } = req.body;
     const featuredImage = req.file ? req.file.path : null;
 
+    // Trusted (auto-approve) users publish immediately; everyone else's
+    // posts go into the pending queue for admin review.
+    const author = await User.findByPk(req.user.id);
+    const status = author && author.autoApprove ? "approved" : "pending";
+
     const post = await Post.create({
       title,
       content,
@@ -25,6 +30,7 @@ app.post("/", authMiddleware, upload.single("featuredImage"), async (req, res) =
       categoryId,
       featuredImage,
       userId: req.user.id,
+      status,
     });
 
     res.status(201).json(post);
@@ -35,8 +41,10 @@ app.post("/", authMiddleware, upload.single("featuredImage"), async (req, res) =
 });
 
 // Route to get all posts — public, paginated, optionally filtered by
-// category (?categoryId=X) or author (?userId=X)
-app.get("/", async (req, res) => {
+// category (?categoryId=X) or author (?userId=X). Only approved posts are
+// shown, EXCEPT a logged-in viewer looking at their own posts also sees
+// their own pending ones.
+app.get("/", optionalAuth, async (req, res) => {
   try {
     const { categoryId, userId } = req.query;
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -46,6 +54,11 @@ app.get("/", async (req, res) => {
     const whereClause = {};
     if (categoryId) whereClause.categoryId = categoryId;
     if (userId) whereClause.userId = userId;
+
+    const viewingOwnPosts = req.user && userId && Number(userId) === req.user.id;
+    if (!viewingOwnPosts) {
+      whereClause.status = "approved";
+    }
 
     const { count, rows: posts } = await Post.findAndCountAll({
       where: whereClause,
@@ -66,6 +79,59 @@ app.get("/", async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: "Error retrieving posts", error });
+  }
+});
+
+// ── Admin routes ──
+
+// List all pending posts (admin only)
+app.get("/admin/pending", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const posts = await Post.findAll({
+      where: { status: "pending" },
+      include: [
+        { model: Category, as: "category" },
+        { model: User, as: "author", attributes: ["id", "username"] },
+      ],
+      order: [["createdOn", "ASC"]],
+    });
+
+    res.status(200).json(posts);
+  } catch (error) {
+    res.status(500).json({ error: "Error retrieving pending posts" });
+  }
+});
+
+// Approve a pending post (admin only)
+app.post("/admin/:id/approve", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const [affectedRows] = await Post.update(
+      { status: "approved" },
+      { where: { id: req.params.id } }
+    );
+
+    if (affectedRows === 0) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    res.status(200).json({ message: "Post approved" });
+  } catch (error) {
+    res.status(500).json({ error: "Error approving post" });
+  }
+});
+
+// Reject (delete) a pending post (admin only)
+app.delete("/admin/:id/reject", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const affectedRows = await Post.destroy({ where: { id: req.params.id } });
+
+    if (affectedRows === 0) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    res.status(200).json({ message: "Post rejected and removed" });
+  } catch (error) {
+    res.status(500).json({ error: "Error rejecting post" });
   }
 });
 

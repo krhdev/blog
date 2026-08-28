@@ -4,6 +4,7 @@ let currentUsername = localStorage.getItem("username") || null;
 let profileUserId = null;
 let currentPage = 1;
 let postContentEditor = null;
+let isAdmin = false;
 
 function updateHeaderForLoggedInUser(username) {
   document.getElementById("auth-toggle-btn").classList.add("hidden");
@@ -79,6 +80,9 @@ function login() {
 
         updateHeaderForLoggedInUser(username);
         showVerificationBanner(data.userData?.verified);
+        isAdmin = !!data.userData?.isAdmin;
+        const adminBtn = document.getElementById("admin-toggle-btn");
+        if (adminBtn) adminBtn.classList.toggle("hidden", !isAdmin);
         closeAuthPanel();
         loadCategories();
         fetchPosts();
@@ -159,9 +163,13 @@ function logout() {
     token = null;
     currentUserId = null;
     currentUsername = null;
+    isAdmin = false;
     updateHeaderForLoggedOutUser();
     const banner = document.getElementById("verify-banner");
     if (banner) banner.remove();
+    const adminBtn = document.getElementById("admin-toggle-btn");
+    if (adminBtn) adminBtn.classList.add("hidden");
+    document.getElementById("admin-panel").classList.add("hidden");
     fetchPosts();
   });
 }
@@ -249,6 +257,117 @@ function backToPosts() {
   fetchPosts();
 }
 
+// ── Admin panel ──
+
+function toggleAdminPanel() {
+  document.getElementById("admin-panel").classList.remove("hidden");
+  document.getElementById("create-post-section").classList.add("hidden");
+  document.getElementById("posts-heading-row").classList.add("hidden");
+  document.getElementById("posts").classList.add("hidden");
+  document.getElementById("pagination").classList.add("hidden");
+  document.getElementById("profile-header").classList.add("hidden");
+
+  loadPendingPosts();
+  loadAdminUsers();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function closeAdminPanel() {
+  document.getElementById("admin-panel").classList.add("hidden");
+  document.getElementById("posts-heading-row").classList.remove("hidden");
+  document.getElementById("posts").classList.remove("hidden");
+  document.getElementById("pagination").classList.remove("hidden");
+  if (token) document.getElementById("create-post-section").classList.remove("hidden");
+}
+
+function loadPendingPosts() {
+  fetch("/api/posts/admin/pending", {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then((res) => res.json())
+    .then((posts) => {
+      const container = document.getElementById("admin-pending-posts");
+
+      if (!Array.isArray(posts) || posts.length === 0) {
+        container.innerHTML = `<p class="no-comments">No posts waiting for review.</p>`;
+        return;
+      }
+
+      container.innerHTML = posts
+        .map(
+          (post) => `
+            <div class="admin-post-item">
+              <h3 class="post-title">${escapeHtml(post.title)}</h3>
+              <div class="post-content">${sanitizeHtml(post.content)}</div>
+              <small>By: ${escapeHtml(post.author?.username || post.postedBy)} on ${new Date(post.createdOn).toLocaleString()}</small>
+              <div class="post-actions">
+                <button class="btn-approve-post" onclick="approvePost(${post.id})">Approve</button>
+                <button class="btn-reject-post" onclick="rejectPost(${post.id})">Reject</button>
+              </div>
+            </div>
+          `
+        )
+        .join("");
+    })
+    .catch((error) => console.log(error));
+}
+
+function approvePost(postId) {
+  fetch(`/api/posts/admin/${postId}/approve`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then((res) => res.json())
+    .then(() => loadPendingPosts())
+    .catch((error) => console.log(error));
+}
+
+function rejectPost(postId) {
+  if (!confirm("Reject and permanently delete this post?")) return;
+
+  fetch(`/api/posts/admin/${postId}/reject`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then((res) => res.json())
+    .then(() => loadPendingPosts())
+    .catch((error) => console.log(error));
+}
+
+function loadAdminUsers() {
+  fetch("/api/users/admin/list", {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then((res) => res.json())
+    .then((users) => {
+      const container = document.getElementById("admin-users-list");
+
+      container.innerHTML = users
+        .map(
+          (user) => `
+            <label class="admin-user-row">
+              <input type="checkbox" ${user.autoApprove ? "checked" : ""} ${user.isAdmin ? "disabled" : ""}
+                onchange="toggleUserAutoApprove(${user.id}, this.checked)">
+              <span>${escapeHtml(user.username)}${user.isAdmin ? " (admin)" : ""}</span>
+            </label>
+          `
+        )
+        .join("");
+    })
+    .catch((error) => console.log(error));
+}
+
+function toggleUserAutoApprove(userId, checked) {
+  fetch(`/api/users/admin/${userId}/auto-approve`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ autoApprove: checked }),
+  }).catch((error) => console.log(error));
+}
+
 function fetchPosts() {
   const params = new URLSearchParams();
 
@@ -278,6 +397,9 @@ function fetchPosts() {
         const categoryBadge = post.category
           ? `<span class="post-category-badge">${escapeHtml(post.category.category_name)}</span>`
           : "";
+        const pendingBadge = post.status === "pending"
+          ? `<span class="post-pending-badge">Pending approval</span>`
+          : "";
         const imageHtml = post.featuredImage
           ? `<img class="post-featured-image" src="${post.featuredImage}" alt="${escapeHtml(post.title)}">`
           : "";
@@ -288,7 +410,7 @@ function fetchPosts() {
 
         div.innerHTML = `
           ${imageHtml}
-          <h3 class="post-title"><span class="post-title-text">${escapeHtml(post.title)}</span>${categoryBadge}</h3>
+          <h3 class="post-title"><span class="post-title-text">${escapeHtml(post.title)}</span>${categoryBadge}${pendingBadge}</h3>
           <div class="post-content">${sanitizeHtml(post.content)}</div>
           <small>By: ${authorLink} on ${new Date(
           post.createdOn
@@ -635,6 +757,9 @@ document.addEventListener("DOMContentLoaded", () => {
         showVerificationBanner(data.user?.verified);
         const checkbox = document.getElementById("digest-checkbox");
         if (checkbox) checkbox.checked = !!data.user?.digestSubscribed;
+        isAdmin = !!data.user?.isAdmin;
+        const adminBtn = document.getElementById("admin-toggle-btn");
+        if (adminBtn) adminBtn.classList.toggle("hidden", !isAdmin);
       })
       .catch((error) => console.log(error));
   } else {

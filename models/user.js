@@ -58,6 +58,16 @@ User.init(
       allowNull: false,
       defaultValue: false,
     },
+    isAdmin: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    autoApprove: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
     createdOn: {
       type: DataTypes.DATE,
       allowNull: false,

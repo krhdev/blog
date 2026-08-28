@@ -40,4 +40,46 @@ const signToken = (user) => {
   return jwt.sign({ data: payload }, secret, { expiresIn: expiration });
 }
 
-module.exports = { authMiddleware, signToken };
+// Like authMiddleware, but never blocks the request — just attaches
+// req.user if a valid token is present, otherwise leaves it undefined.
+// Used on public routes that behave slightly differently for a logged-in
+// viewer (e.g. showing your own pending posts) without requiring login.
+const optionalAuth = (req, res, next) => {
+  let token = req.body.token || req.query.token || req.headers.authorization;
+
+  if (req.headers.authorization) {
+    token = token.split(' ').pop().trim();
+  }
+
+  if (!token) {
+    return next();
+  }
+
+  try {
+    const { data } = jwt.verify(token, secret, { maxAge: expiration });
+    req.user = data;
+  } catch (err) {
+    // Invalid/expired token on an optional route — just proceed as anonymous
+  }
+
+  next();
+}
+
+// Requires a valid token AND that the user is flagged as an admin.
+// Must run after authMiddleware (relies on req.user.id being set).
+const adminMiddleware = async (req, res, next) => {
+  try {
+    const { User } = require('../models');
+    const user = await User.findByPk(req.user.id);
+
+    if (!user || !user.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
+    next();
+  } catch (err) {
+    res.status(500).json({ message: 'Error checking admin status' });
+  }
+}
+
+module.exports = { authMiddleware, optionalAuth, adminMiddleware, signToken };

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -74,6 +75,7 @@
         </div>
 
         <div id="user-menu" class="user-menu hidden">
+            <button class="btn-admin-toggle hidden" id="admin-toggle-btn" onclick="toggleAdminPanel()">Admin</button>
             <button class="btn-logout-small" onclick="logout()">Logout</button>
         </div>
 
@@ -103,6 +105,19 @@
             </div>
 
             <div class="hidden" id="profile-header"></div>
+
+            <div class="hidden" id="admin-panel">
+                <button class="btn-back-to-posts" onclick="closeAdminPanel()">&larr; Back to posts</button>
+
+                <h2>Pending Posts</h2>
+                <div id="admin-pending-posts"></div>
+
+                <hr>
+
+                <h2>Trusted Users (auto-approve)</h2>
+                <p class="admin-hint">Tick a user to let their posts publish immediately without review.</p>
+                <div id="admin-users-list"></div>
+            </div>
 
             <div id="posts-heading-row">
                 <h2 id="posts-heading">Posts</h2>

@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const crypto = require("crypto");
 const { User, Post } = require("../models");
-const { signToken, authMiddleware } = require("../utils/auth");
+const { signToken, authMiddleware, adminMiddleware } = require("../utils/auth");
 const { sendVerificationEmail, sendPasswordResetEmail } = require("../utils/email");
 
 // Get current authenticated user
@@ -14,6 +14,41 @@ router.get("/me", authMiddleware, async (req, res) => {
     return res.status(200).json({ user });
   } catch (err) {
     res.status(500).json(err);
+  }
+});
+
+// ── Admin routes ──
+
+// List all users with their auto-approve status (admin only)
+router.get("/admin/list", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const users = await User.findAll({
+      attributes: ["id", "username", "email", "autoApprove", "isAdmin", "createdOn"],
+      order: [["username", "ASC"]],
+    });
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ message: "Error retrieving users" });
+  }
+});
+
+// Toggle a user's auto-approve (trusted) status (admin only)
+router.put("/admin/:id/auto-approve", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const { autoApprove } = req.body;
+
+    const [affectedRows] = await User.update(
+      { autoApprove: !!autoApprove },
+      { where: { id: req.params.id } }
+    );
+
+    if (affectedRows === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ message: "User trust status updated" });
+  } catch (err) {
+    res.status(500).json({ message: "Error updating user" });
   }
 });
 

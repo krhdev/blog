@@ -22,6 +22,11 @@ Post.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    status: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: "pending",
+    },
     createdOn: {
       type: DataTypes.DATE,
       allowNull: false,
