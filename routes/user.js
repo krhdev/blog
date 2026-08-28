@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const { User, Post } = require("../models");
 const { signToken, authMiddleware, adminMiddleware } = require("../utils/auth");
 const { sendVerificationEmail, sendPasswordResetEmail } = require("../utils/email");
+const { uploadAvatar } = require("../utils/upload");
 
 // Get current authenticated user
 router.get("/me", authMiddleware, async (req, res) => {
@@ -56,7 +57,18 @@ router.put("/admin/:id/auto-approve", authMiddleware, adminMiddleware, async (re
 router.get("/:id", async (req, res) => {
   try {
     const userData = await User.findByPk(req.params.id, {
-      attributes: ["id", "username", "createdOn"],
+      attributes: [
+        "id",
+        "username",
+        "createdOn",
+        "avatarUrl",
+        "tagline",
+        "bio",
+        "tiktokUrl",
+        "linkedinUrl",
+        "instagramUrl",
+        "websiteUrl",
+      ],
     });
 
     if (!userData) {
@@ -202,6 +214,50 @@ router.put("/:id", authMiddleware, async (req, res) => {
     res.status(200).json({ message: "User updated successfully" });
   } catch (err) {
     res.status(500).json(err);
+  }
+});
+
+// UPDATE your own profile: tagline, bio, socials, and optionally a new
+// avatar image. Separate from the route above to keep each whitelist
+// tightly scoped to what it's actually meant to do.
+router.put("/:id/profile", authMiddleware, uploadAvatar.single("avatar"), async (req, res) => {
+  try {
+    if (Number(req.params.id) !== req.user.id) {
+      return res.status(403).json({ message: "You can only update your own profile" });
+    }
+
+    const allowedFields = ["tagline", "bio", "tiktokUrl", "linkedinUrl", "instagramUrl", "websiteUrl"];
+    const updateData = {};
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    }
+
+    if (req.file) {
+      updateData.avatarUrl = req.file.path;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: "No valid fields to update" });
+    }
+
+    const [affectedRows] = await User.update(updateData, {
+      where: { id: req.params.id },
+    });
+
+    if (affectedRows === 0) {
+      return res.status(404).json({ message: "No User found with this id" });
+    }
+
+    const updatedUser = await User.findByPk(req.params.id, {
+      attributes: { exclude: ["password", "verificationToken", "resetToken"] },
+    });
+
+    res.status(200).json({ message: "Profile updated successfully", user: updatedUser });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Error updating profile" });
   }
 });
 

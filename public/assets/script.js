@@ -4,6 +4,7 @@ let currentUsername = localStorage.getItem("username") || null;
 let profileUserId = null;
 let currentPage = 1;
 let postContentEditor = null;
+let bioEditor = null;
 let isAdmin = false;
 
 function updateHeaderForLoggedInUser(username) {
@@ -170,6 +171,7 @@ function logout() {
     const adminBtn = document.getElementById("admin-toggle-btn");
     if (adminBtn) adminBtn.classList.add("hidden");
     document.getElementById("admin-panel").classList.add("hidden");
+    document.getElementById("edit-profile-panel").classList.add("hidden");
     fetchPosts();
   });
 }
@@ -220,20 +222,56 @@ function viewProfile(userId) {
     .then((res) => res.json())
     .then((user) => {
       const joinDate = new Date(user.createdOn).toLocaleDateString();
+
+      const avatarHtml = user.avatarUrl
+        ? `<img class="profile-avatar" src="${user.avatarUrl}" alt="${escapeHtml(user.username)}'s avatar">`
+        : "";
+
+      const taglineHtml = user.tagline
+        ? `<p class="profile-tagline">${escapeHtml(user.tagline)}</p>`
+        : "";
+
+      const bioHtml = user.bio
+        ? `<div class="profile-bio">${sanitizeHtml(user.bio)}</div>`
+        : "";
+
+      const socialLinks = [
+        { url: user.tiktokUrl, label: "TikTok" },
+        { url: user.linkedinUrl, label: "LinkedIn" },
+        { url: user.instagramUrl, label: "Instagram" },
+        { url: user.websiteUrl, label: "Website" },
+      ].filter((s) => s.url);
+
+      const socialsHtml = socialLinks.length
+        ? `<div class="profile-socials">${socialLinks
+            .map((s) => `<a href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${s.label}</a>`)
+            .join("")}</div>`
+        : "";
+
       document.getElementById("profile-header").innerHTML = `
         <div class="profile-card">
           <button class="btn-back-to-posts" onclick="backToPosts()">&larr; Back to all posts</button>
-          <h2 class="profile-username">Viewing ${escapeHtml(user.username)}'s profile</h2>
-          <p class="profile-meta">Joined ${joinDate} &middot; ${user.postCount} post${user.postCount === 1 ? "" : "s"}</p>
+          <div class="profile-card-top">
+            ${avatarHtml}
+            <div>
+              <h2 class="profile-username">Viewing ${escapeHtml(user.username)}'s profile</h2>
+              ${taglineHtml}
+              <p class="profile-meta">Joined ${joinDate} &middot; ${user.postCount} post${user.postCount === 1 ? "" : "s"}</p>
+            </div>
+          </div>
+          ${bioHtml}
+          ${socialsHtml}
         </div>
       `;
       document.getElementById("profile-header").classList.remove("hidden");
       document.getElementById("category-filter-row").classList.add("hidden");
       document.getElementById("posts-heading").textContent = `Posts by ${user.username}`;
 
-      // Hide the post-creation form while viewing a profile
+      // Hide other panels while viewing a profile
       const createSection = document.getElementById("create-post-section");
       if (createSection) createSection.classList.add("hidden");
+      document.getElementById("edit-profile-panel").classList.add("hidden");
+      document.getElementById("admin-panel").classList.add("hidden");
 
       currentPage = 1;
       fetchPosts();
@@ -259,6 +297,92 @@ function backToPosts() {
 
 // ── Admin panel ──
 
+// ── Edit profile ──
+
+function toggleEditProfilePanel() {
+  document.getElementById("edit-profile-panel").classList.remove("hidden");
+  document.getElementById("create-post-section").classList.add("hidden");
+  document.getElementById("posts-heading-row").classList.add("hidden");
+  document.getElementById("posts").classList.add("hidden");
+  document.getElementById("pagination").classList.add("hidden");
+  document.getElementById("profile-header").classList.add("hidden");
+  document.getElementById("admin-panel").classList.add("hidden");
+
+  loadOwnProfileForEditing();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function closeEditProfilePanel() {
+  document.getElementById("edit-profile-panel").classList.add("hidden");
+  document.getElementById("posts-heading-row").classList.remove("hidden");
+  document.getElementById("posts").classList.remove("hidden");
+  document.getElementById("pagination").classList.remove("hidden");
+  if (token) document.getElementById("create-post-section").classList.remove("hidden");
+}
+
+function loadOwnProfileForEditing() {
+  fetch("/api/users/me", {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      const user = data.user || {};
+
+      document.getElementById("tagline-input").value = user.tagline || "";
+      document.getElementById("tiktok-input").value = user.tiktokUrl || "";
+      document.getElementById("linkedin-input").value = user.linkedinUrl || "";
+      document.getElementById("instagram-input").value = user.instagramUrl || "";
+      document.getElementById("website-input").value = user.websiteUrl || "";
+
+      if (bioEditor) {
+        bioEditor.root.innerHTML = user.bio || "";
+      }
+
+      const preview = document.getElementById("avatar-preview");
+      if (user.avatarUrl) {
+        preview.src = user.avatarUrl;
+        preview.classList.remove("hidden");
+      } else {
+        preview.classList.add("hidden");
+      }
+    })
+    .catch((error) => console.log(error));
+}
+
+function saveProfile() {
+  const formData = new FormData();
+  formData.append("tagline", document.getElementById("tagline-input").value);
+  formData.append("bio", bioEditor ? bioEditor.root.innerHTML : "");
+  formData.append("tiktokUrl", document.getElementById("tiktok-input").value);
+  formData.append("linkedinUrl", document.getElementById("linkedin-input").value);
+  formData.append("instagramUrl", document.getElementById("instagram-input").value);
+  formData.append("websiteUrl", document.getElementById("website-input").value);
+
+  const avatarInput = document.getElementById("avatar-input");
+  if (avatarInput.files[0]) {
+    formData.append("avatar", avatarInput.files[0]);
+  }
+
+  fetch(`/api/users/${currentUserId}/profile`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Failed to update profile");
+      return res.json();
+    })
+    .then(() => {
+      alert("Profile updated!");
+      avatarInput.value = "";
+      closeEditProfilePanel();
+    })
+    .catch((error) => {
+      alert(error.message);
+      console.log(error);
+    });
+}
+
 function toggleAdminPanel() {
   document.getElementById("admin-panel").classList.remove("hidden");
   document.getElementById("create-post-section").classList.add("hidden");
@@ -266,6 +390,7 @@ function toggleAdminPanel() {
   document.getElementById("posts").classList.add("hidden");
   document.getElementById("pagination").classList.add("hidden");
   document.getElementById("profile-header").classList.add("hidden");
+  document.getElementById("edit-profile-panel").classList.add("hidden");
 
   loadPendingPosts();
   loadAdminUsers();
@@ -740,6 +865,17 @@ document.addEventListener("DOMContentLoaded", () => {
     postContentEditor = new Quill("#post-content-editor", {
       theme: "snow",
       placeholder: "Content",
+      modules: {
+        toolbar: [["bold", "italic"], [{ list: "ordered" }, { list: "bullet" }], ["link"]],
+      },
+    });
+  }
+
+  const bioEditorEl = document.getElementById("bio-editor");
+  if (bioEditorEl && typeof Quill !== "undefined") {
+    bioEditor = new Quill("#bio-editor", {
+      theme: "snow",
+      placeholder: "Tell people a bit about yourself...",
       modules: {
         toolbar: [["bold", "italic"], [{ list: "ordered" }, { list: "bullet" }], ["link"]],
       },

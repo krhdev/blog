@@ -68,6 +68,34 @@ User.init(
       allowNull: false,
       defaultValue: false,
     },
+    avatarUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    tagline: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    bio: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    tiktokUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    linkedinUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    instagramUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    websiteUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     createdOn: {
       type: DataTypes.DATE,
       allowNull: false,

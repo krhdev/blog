@@ -22,4 +22,19 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
 });
 
+const avatarStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "tech-blog-avatars",
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    transformation: [{ width: 400, height: 400, crop: "fill", gravity: "face" }],
+  },
+});
+
+const uploadAvatar = multer({
+  storage: avatarStorage,
+  limits: { fileSize: 3 * 1024 * 1024 }, // 3MB max
+});
+
 module.exports = upload;
+module.exports.uploadAvatar = uploadAvatar;
