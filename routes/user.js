@@ -161,6 +161,7 @@ router.post("/resend-verification", authMiddleware, async (req, res) => {
 
     res.status(200).json({ message: "Verification email sent" });
   } catch (err) {
+    console.log("Resend verification error:", err);
     res.status(500).json({ message: "Error resending verification email" });
   }
 });
