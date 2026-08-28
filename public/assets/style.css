@@ -143,6 +143,10 @@ body, html {
 }
 
 /* ── Posts feed ── */
+#posts.hidden {
+    display: none;
+}
+
 #posts {
     display: flex;
     flex-direction: column;
@@ -674,6 +678,10 @@ body, html {
 }
 
 /* ── Posts heading row ── */
+#posts-heading-row.hidden {
+    display: none;
+}
+
 #posts-heading-row {
     display: flex;
     align-items: center;
@@ -694,6 +702,10 @@ body, html {
 }
 
 /* ── Pagination ── */
+.pagination.hidden {
+    display: none;
+}
+
 .pagination {
     display: flex;
     align-items: center;
@@ -1111,6 +1123,10 @@ body, html {
 }
 
 /* ── Create post section layout ── */
+#create-post-section.hidden {
+    display: none;
+}
+
 #create-post-section {
     display: flex;
     flex-direction: column;
@@ -1386,9 +1402,14 @@ body, html {
     color: var(--brand-readable);
 }
 
+#edit-profile-panel.hidden {
+    display: none;
+}
+
 #edit-profile-panel {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: clamp(12px, 1.5vw, 18px);
 }
 
@@ -1427,7 +1448,7 @@ body, html {
     box-shadow: 0 0 0 3px rgba(81, 0, 97, 0.12);
 }
 
-#edit-profile-panel button {
+#edit-profile-panel > button {
     align-self: flex-start;
     padding: clamp(11px, 1.1vw, 15px) clamp(22px, 2.5vw, 34px);
     background: var(--brand);
@@ -1441,7 +1462,7 @@ body, html {
     transition: background 0.15s;
 }
 
-#edit-profile-panel button:hover { background: var(--brand-dark); }
+#edit-profile-panel > button:hover { background: var(--brand-dark); }
 
 .avatar-edit-row {
     display: flex;
