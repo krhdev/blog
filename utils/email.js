@@ -3,7 +3,7 @@ const { Resend } = require("resend");
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Swap this for a verified domain address once you've set one up in Resend
-const FROM_ADDRESS = "KRHDev Tech Blog <no-reply@krh1.co.uk>";
+const FROM_ADDRESS = "More than just business Blog <no-reply@krh1.co.uk>";
 
 async function sendVerificationEmail(toEmail, username, token) {
   const verifyUrl = `${process.env.APP_URL}/api/users/verify/${token}`;
@@ -12,10 +12,10 @@ async function sendVerificationEmail(toEmail, username, token) {
     await resend.emails.send({
       from: FROM_ADDRESS,
       to: toEmail,
-      subject: "Verify your KRHDev Tech Blog account",
+      subject: "Verify your More than just business Blog account",
       html: `
         <p>Hi ${username},</p>
-        <p>Thanks for registering on KRHDev Tech Blog. Please confirm your email address by clicking the link below:</p>
+        <p>Thanks for registering on More than just business Blog. Please confirm your email address by clicking the link below:</p>
         <p><a href="${verifyUrl}">Verify my email</a></p>
         <p>If you didn't create this account, you can safely ignore this email.</p>
       `,
@@ -33,7 +33,7 @@ async function sendPasswordResetEmail(toEmail, username, token) {
     await resend.emails.send({
       from: FROM_ADDRESS,
       to: toEmail,
-      subject: "Reset your KRHDev Tech Blog password",
+      subject: "Reset your More than just business Blog password",
       html: `
         <p>Hi ${username},</p>
         <p>We received a request to reset your password. Click the link below to choose a new one — this link expires in 1 hour:</p>
@@ -62,7 +62,7 @@ async function sendDigestEmail(toEmail, username, posts) {
     await resend.emails.send({
       from: FROM_ADDRESS,
       to: toEmail,
-      subject: `This week on KRHDev Tech Blog: ${posts.length} new post${posts.length === 1 ? "" : "s"}`,
+      subject: `This week on More than just business Blog: ${posts.length} new post${posts.length === 1 ? "" : "s"}`,
       html: `
         <p>Hi ${username},</p>
         <p>Here's what's new on the blog this week:</p>
