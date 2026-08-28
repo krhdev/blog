@@ -529,6 +529,10 @@ function fetchPosts() {
           ? `<img class="post-featured-image" src="${post.featuredImage}" alt="${escapeHtml(post.title)}">`
           : "";
 
+        const authorAvatar = post.author?.avatarUrl
+          ? `<img class="post-author-avatar" src="${post.author.avatarUrl}" alt="${escapeHtml(post.author.username)}'s avatar">`
+          : "";
+
         const authorLink = post.author
           ? `<span class="post-author-link" onclick="viewProfile(${post.author.id})">${escapeHtml(post.author.username)}</span>`
           : escapeHtml(post.postedBy);
@@ -537,9 +541,9 @@ function fetchPosts() {
           ${imageHtml}
           <h3 class="post-title"><span class="post-title-text">${escapeHtml(post.title)}</span>${categoryBadge}${pendingBadge}</h3>
           <div class="post-content">${sanitizeHtml(post.content)}</div>
-          <small>By: ${authorLink} on ${new Date(
+          <div class="post-byline">${authorAvatar}<small>By: ${authorLink} on ${new Date(
           post.createdOn
-        ).toLocaleString()}</small>
+        ).toLocaleString()}</small></div>
           ${
             isOwner
               ? `<div class="post-actions">

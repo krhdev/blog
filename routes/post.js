@@ -64,7 +64,7 @@ app.get("/", optionalAuth, async (req, res) => {
       where: whereClause,
       include: [
         { model: Category, as: "category" },
-        { model: User, as: "author", attributes: ["id", "username"] },
+        { model: User, as: "author", attributes: ["id", "username", "avatarUrl"] },
       ],
       order: [["createdOn", "DESC"]],
       limit,
@@ -91,7 +91,7 @@ app.get("/admin/pending", authMiddleware, adminMiddleware, async (req, res) => {
       where: { status: "pending" },
       include: [
         { model: Category, as: "category" },
-        { model: User, as: "author", attributes: ["id", "username"] },
+        { model: User, as: "author", attributes: ["id", "username", "avatarUrl"] },
       ],
       order: [["createdOn", "ASC"]],
     });
@@ -141,7 +141,7 @@ app.get("/:id", async (req, res) => {
     const post = await Post.findByPk(req.params.id, {
       include: [
         { model: Category, as: "category" },
-        { model: User, as: "author", attributes: ["id", "username"] },
+        { model: User, as: "author", attributes: ["id", "username", "avatarUrl"] },
       ],
     });
     res.status(200).json(post);
