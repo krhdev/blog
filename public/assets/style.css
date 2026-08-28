@@ -335,8 +335,8 @@ body, html {
 .post-featured-image {
     display: block;
     width: 100%;
-    aspect-ratio: 16 / 9;
-    object-fit: cover;
+    max-height: 500px;
+    object-fit: contain;
     border-radius: 10px;
     margin-bottom: 14px;
     box-shadow: 0 3px 10px var(--shadow);
@@ -1321,6 +1321,14 @@ body, html {
     border-radius: 10px;
     padding: 16px;
     margin-bottom: 12px;
+}
+
+.admin-post-item .post-featured-image {
+    max-width: 100%;
+    max-height: 240px;
+    aspect-ratio: auto;
+    object-fit: contain;
+    margin-bottom: 10px;
 }
 
 .admin-post-item .post-title { font-size: 1rem; margin-bottom: 6px; }

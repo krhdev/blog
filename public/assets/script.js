@@ -419,9 +419,14 @@ function loadPendingPosts() {
       }
 
       container.innerHTML = posts
-        .map(
-          (post) => `
+        .map((post) => {
+          const imageHtml = post.featuredImage
+            ? `<img class="post-featured-image" src="${post.featuredImage}" alt="${escapeHtml(post.title)}">`
+            : "";
+
+          return `
             <div class="admin-post-item">
+              ${imageHtml}
               <h3 class="post-title">${escapeHtml(post.title)}</h3>
               <div class="post-content">${sanitizeHtml(post.content)}</div>
               <small>By: ${escapeHtml(post.author?.username || post.postedBy)} on ${new Date(post.createdOn).toLocaleString()}</small>
@@ -430,8 +435,8 @@ function loadPendingPosts() {
                 <button class="btn-reject-post" onclick="rejectPost(${post.id})">Reject</button>
               </div>
             </div>
-          `
-        )
+          `;
+        })
         .join("");
     })
     .catch((error) => console.log(error));
