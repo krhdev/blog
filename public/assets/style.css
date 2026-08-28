@@ -1570,3 +1570,44 @@ body, html {
     object-fit: cover;
     flex-shrink: 0;
 }
+
+/* ── Mobile header fixes ──
+   The logo/header weren't scaling down for small screens, likely causing
+   both the "login doesn't work" and "not mobile friendly" reports — a
+   fixed 250px-tall logo can dominate a phone screen entirely. */
+@media (max-width: 640px) {
+    .site-header {
+        padding: 14px 16px;
+        gap: 12px 16px;
+    }
+
+    .brand {
+        gap: 12px;
+    }
+
+    .brand img {
+        height: 64px;
+        padding: 4px;
+    }
+
+    .brand-text h2 {
+        white-space: normal;
+        font-size: 0.85rem;
+    }
+
+    .brand-subtext {
+        max-width: 100%;
+    }
+
+    .header-actions {
+        gap: 8px;
+    }
+
+    .btn-auth-toggle,
+    .btn-admin-toggle,
+    .btn-edit-profile,
+    .btn-logout-small {
+        padding: 8px 12px;
+        font-size: 0.78rem;
+    }
+}
