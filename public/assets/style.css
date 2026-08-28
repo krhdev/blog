@@ -1582,12 +1582,21 @@ body, html {
     }
 
     .brand {
+        flex-direction: column;
+        align-items: flex-start;
         gap: 12px;
+        width: 100%;
     }
 
     .brand img {
-        height: 64px;
+        width: 100%;
+        height: auto;
+        max-height: 140px;
         padding: 4px;
+    }
+
+    .brand-text {
+        width: 100%;
     }
 
     .brand-text h2 {
