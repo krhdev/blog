@@ -495,7 +495,16 @@ function toggleUserAutoApprove(userId, checked) {
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ autoApprove: checked }),
-  }).catch((error) => console.log(error));
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Failed to update trust status — please try again");
+      return res.json();
+    })
+    .catch((error) => {
+      alert(error.message);
+      console.log(error);
+      loadAdminUsers(); // reload so the checkbox reflects what's actually saved
+    });
 }
 
 function fetchPosts() {
