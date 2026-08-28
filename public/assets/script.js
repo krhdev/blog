@@ -114,7 +114,14 @@ function resendVerification() {
     headers: { Authorization: `Bearer ${token}` },
   })
     .then((res) => res.json())
-    .then((data) => alert(data.message))
+    .then((data) => {
+      const message = data.message || "";
+      if (message.toLowerCase().includes("jwt expired") || message.toLowerCase().includes("invalid token")) {
+        alert("Your session has expired — please log out and log back in, then try again.");
+      } else {
+        alert(message);
+      }
+    })
     .catch((error) => console.log(error));
 }
 

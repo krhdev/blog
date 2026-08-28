@@ -997,6 +997,8 @@ body, html {
     justify-content: center;
     flex-wrap: wrap;
     gap: 12px;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
     padding: 10px 20px;
     background: #f0a500;
     color: #1a1a1a;
